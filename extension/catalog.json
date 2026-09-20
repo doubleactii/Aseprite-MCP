@@ -1,0 +1,3560 @@
+[
+  {
+    "name": "sprite.create",
+    "description": "Create an RGB sprite; becomes the current AI target.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.info",
+    "description": "Inspect the current AI target, layers, frames and tags.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.list",
+    "description": "List open sprites; use select to explicitly target one.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.select",
+    "description": "Select an open sprite by ID; all later edits target it.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.open",
+    "description": "Open a file inside the chosen artwork folder.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "input": "path"
+  },
+  {
+    "name": "sprite.save",
+    "description": "Save an Aseprite copy to a NEW file in the artwork folder.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "sprite.resize",
+    "description": "Resize all cels using nearest-neighbor sampling.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.crop",
+    "description": "Crop the canvas.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.duplicate",
+    "description": "Duplicate target into a new untitled sprite.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "sprite.close",
+    "description": "Close only an unmodified sprite. Save your work in the editor first.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.pixel",
+    "description": "Set one pixel.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.pixels",
+    "description": "Draw many pixels in one operation.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "pixels": {
+          "minItems": 1,
+          "maxItems": 16384,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              },
+              "y": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "color"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "pixels"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.line",
+    "description": "Draw a crisp integer line.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "x2": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y2": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "x2",
+        "y2",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.rectangle",
+    "description": "Draw a rectangle outline.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.filled_rectangle",
+    "description": "Draw a solid rectangle.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.ellipse",
+    "description": "Draw an ellipse outline.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.filled_ellipse",
+    "description": "Draw a solid ellipse.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.fill",
+    "description": "Flood fill contiguous pixels in the target cel.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.stroke",
+    "description": "Draw connected points with a square brush.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "points": {
+          "minItems": 1,
+          "maxItems": 1024,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              },
+              "y": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "size": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "points",
+        "size",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.polygon",
+    "description": "Draw a closed polygon outline.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "points": {
+          "minItems": 3,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              },
+              "y": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "points",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.clear",
+    "description": "Clear selected pixels, or the entire cel if no selection.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.dither",
+    "description": "Fill a rectangle with a two-color Bayer pattern.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "color2": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "density": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "color",
+        "color2",
+        "density"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.gradient",
+    "description": "Draw a stepped two-color gradient.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "color2": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "steps": {
+          "default": 4,
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 32
+        },
+        "axis": {
+          "default": "y",
+          "type": "string",
+          "enum": [
+            "x",
+            "y"
+          ]
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "color",
+        "color2",
+        "steps",
+        "axis"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.symmetry",
+    "description": "Draw pixels mirrored around the canvas center.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "pixels": {
+          "minItems": 1,
+          "maxItems": 8192,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              },
+              "y": {
+                "type": "integer",
+                "minimum": -2048,
+                "maximum": 2048
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "color"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "axis": {
+          "type": "string",
+          "enum": [
+            "x",
+            "y",
+            "both"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "pixels",
+        "axis"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.pattern",
+    "description": "Stamp an indexed pixel matrix. -1 is transparent/skip.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "rows": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "minItems": 1,
+            "maxItems": 256,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 255
+            }
+          }
+        },
+        "colors": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+          }
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "rows",
+        "colors"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "drawing.erase",
+    "description": "Erase a rectangle to transparent.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.list",
+    "description": "List all layers, including nested groups.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.add",
+    "description": "Add a named image layer.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.delete",
+    "description": "Delete a layer and its cels. Undoable.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "layer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.rename",
+    "description": "Rename a layer.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "layer",
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.opacity",
+    "description": "Set layer opacity from 0 to 255.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "opacity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      },
+      "required": [
+        "layer",
+        "opacity"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.blend",
+    "description": "Set the layer blend mode.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "MULTIPLY",
+            "SCREEN",
+            "OVERLAY",
+            "DARKEN",
+            "LIGHTEN",
+            "ADDITION",
+            "SUBTRACT",
+            "DIFFERENCE"
+          ]
+        }
+      },
+      "required": [
+        "layer",
+        "mode"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.visibility",
+    "description": "Show or hide a layer.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "layer",
+        "visible"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.reorder",
+    "description": "Set layer position within its parent (1 is bottom).",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "layer",
+        "index"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.group",
+    "description": "Create a layer group.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.parent",
+    "description": "Move a layer into a group, or the sprite root.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "layer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.duplicate",
+    "description": "Duplicate an image layer and all its cels.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "layer",
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "layer.flatten",
+    "description": "Flatten visible layers. Undoable.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.frames",
+    "description": "List frame durations in milliseconds.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.add",
+    "description": "Append empty animation frames.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "count": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "duration": {
+          "default": 100,
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "count",
+        "duration"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.duplicate",
+    "description": "Duplicate a frame immediately before its source.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "frame"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.delete",
+    "description": "Delete one frame; keep at least one.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "frame"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.duration",
+    "description": "Set frame duration in milliseconds.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "duration"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.select",
+    "description": "Show a frame in the editor.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "frame"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.tags",
+    "description": "List named animation ranges.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.tag",
+    "description": "Create a named animation range.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "from": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "direction": {
+          "default": "FORWARD",
+          "type": "string",
+          "enum": [
+            "FORWARD",
+            "REVERSE",
+            "PING_PONG",
+            "PING_PONG_REVERSE"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "from",
+        "to",
+        "direction"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.delete_tag",
+    "description": "Delete an animation tag.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.rename_tag",
+    "description": "Rename an animation tag.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "newName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name",
+        "newName"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.interpolate",
+    "description": "Append translated copies of a frame, interpolating a cel offset (not AI inbetweening).",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "dx": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "dy": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        }
+      },
+      "required": [
+        "frame",
+        "layer",
+        "dx",
+        "dy",
+        "count"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "animation.preview",
+    "description": "Export an animated GIF preview to a new file.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "palette.list",
+    "description": "List bundled palette names and attribution.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.get",
+    "description": "Read the target palette as hex colors.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.set",
+    "description": "Replace the palette with explicit colors.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "colors": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+          }
+        }
+      },
+      "required": [
+        "colors"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.builtin",
+    "description": "Apply a bundled palette.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "pico-8",
+            "endesga-32",
+            "slso8",
+            "sweetie-16",
+            "arne-16",
+            "resurrect-64",
+            "apollo",
+            "island-joy-16",
+            "na16",
+            "crimson"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.color",
+    "description": "Change a zero-based palette entry.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        }
+      },
+      "required": [
+        "index",
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.ramp",
+    "description": "Replace palette with a linear RGB color ramp.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 64
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.sort",
+    "description": "Sort palette by luminance. RGB artwork is unchanged.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "order": {
+          "default": "ascending",
+          "type": "string",
+          "enum": [
+            "ascending",
+            "descending"
+          ]
+        }
+      },
+      "required": [
+        "order"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "palette.import_image",
+    "description": "Extract up to 256 exact colors from an image.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "input": "path"
+  },
+  {
+    "name": "palette.export",
+    "description": "Export the palette as a PNG swatch strip.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "palette.nearest",
+    "description": "Find the nearest palette color by RGB distance.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        }
+      },
+      "required": [
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.rectangle",
+    "description": "Replace selection with a rectangle.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.ellipse",
+    "description": "Replace selection with an ellipse.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.color",
+    "description": "Select matching RGBA pixels in a composited frame.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.invert",
+    "description": "Invert selection within the canvas.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.all",
+    "description": "Select the whole canvas.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.clear",
+    "description": "Deselect.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.bounds",
+    "description": "Get selection bounds and whether empty.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "selection.translate",
+    "description": "Move selection without moving pixels.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "dx": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "dy": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        }
+      },
+      "required": [
+        "dx",
+        "dy"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "export.png",
+    "description": "Export one composited frame as PNG.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "export.sheet",
+    "description": "Export frames in a regular PNG grid.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "columns": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        }
+      },
+      "required": [
+        "path",
+        "columns"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "export.gif",
+    "description": "Export the complete animation as GIF.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "export.layer",
+    "description": "Export one isolated image layer/frame as PNG.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "path",
+        "layer"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "export.tag",
+    "description": "Export a named animation as GIF.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "path",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "export.metadata",
+    "description": "Export frame durations, layers and tags as JSON.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "vyi.export",
+    "description": "Export Vylocity v1 icons, embedded PNG frames and named states. Separate icons per selected layer or merge them.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "layers": {
+          "minItems": 1,
+          "maxItems": 32,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "merge": {
+          "default": false,
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "path",
+        "layers",
+        "merge"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "vyi.inspect",
+    "description": "Inspect a VYI file without returning embedded images.",
+    "effect": "read",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "input": "path"
+  },
+  {
+    "name": "vyi.import",
+    "description": "Import one VYI icon into a new sprite. State timelines are concatenated with tags.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "icon": {
+          "default": 0,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 127
+        }
+      },
+      "required": [
+        "path",
+        "icon"
+      ],
+      "additionalProperties": false
+    },
+    "input": "path"
+  },
+  {
+    "name": "vyi.skip",
+    "description": "Set the ase2vyi-compatible skip marker on a cel; preserve unrelated user data.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "skip": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "skip"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "vyi.preview",
+    "description": "Mark a cel as its layer’s VYI preview. It can also be skipped from animation.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "analysis.colors",
+    "description": "Return the most common composited RGBA colors.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "limit": {
+          "default": 16,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        }
+      },
+      "required": [
+        "limit"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "analysis.compare",
+    "description": "Compare two frames: changed pixel count and bounding box.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "analysis.diff",
+    "description": "Write a visual PNG of differences between frames.",
+    "effect": "file",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "output": "path"
+  },
+  {
+    "name": "analysis.validate",
+    "description": "Check animation durations, duplicate frames and empty frames.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "analysis.bounds",
+    "description": "Find nontransparent bounds in a composited frame.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "analysis.pixel",
+    "description": "Read one composited RGBA pixel.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "transform.flip",
+    "description": "Flip the target cel.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "axis": {
+          "type": "string",
+          "enum": [
+            "x",
+            "y"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "axis"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "transform.rotate",
+    "description": "Rotate the target cel inside the canvas; rectangular canvases may clip.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "degrees": {
+          "type": "string",
+          "enum": [
+            "90",
+            "180",
+            "270"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "degrees"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "transform.shift",
+    "description": "Shift the target cel, optionally wrapping canvas edges.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "dx": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "dy": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "wrap": {
+          "default": true,
+          "type": "boolean"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "dx",
+        "dy",
+        "wrap"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "transform.scale",
+    "description": "Scale target cel with nearest-neighbor sampling from top-left.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "factor": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "factor"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "templates.character",
+    "description": "Create a character sprite with outline, base and shading layers plus idle/walk tags.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "width": {
+          "default": 32,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "default": 32,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "templates.tileset",
+    "description": "Create a blank tile sheet with a matching grid.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tileWidth": {
+          "default": 16,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "tileHeight": {
+          "default": 16,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "columns": {
+          "default": 4,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "rows": {
+          "default": 4,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        }
+      },
+      "required": [
+        "tileWidth",
+        "tileHeight",
+        "columns",
+        "rows"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "templates.icon",
+    "description": "Create a small RGB icon with base and highlights layers.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "size": {
+          "default": 32,
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "size"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "editor.status",
+    "description": "Read Aseprite version, paused state and connection capabilities.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "editor.undo",
+    "description": "Undo one editor operation on the AI target.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "editor.redo",
+    "description": "Redo one editor operation on the AI target.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "editor.refresh",
+    "description": "Refresh the editor display.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "editor.lua",
+    "description": "Advanced: arbitrary Lua. Disabled by default; requires local opt-in and an editor confirmation for EVERY call. Has full user privileges.",
+    "effect": "unsafe",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32768
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.info",
+    "description": "Inspect an image cel.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.create",
+    "description": "Create an empty cel on an image layer/frame.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.delete",
+    "description": "Delete a cel.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.move",
+    "description": "Move a cel to a canvas position.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.opacity",
+    "description": "Change cel opacity.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "opacity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "opacity"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.copy",
+    "description": "Copy a cel to another frame on the same layer.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "to"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "cel.clear",
+    "description": "Clear cel pixels.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "slice.list",
+    "description": "List slice bounds.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "slice.create",
+    "description": "Create a named slice.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "name",
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "slice.delete",
+    "description": "Delete a named slice.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "slice.bounds",
+    "description": "Set named slice bounds.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "name",
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "slice.pivot",
+    "description": "Set slice pivot.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        }
+      },
+      "required": [
+        "name",
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "tileset.list",
+    "description": "List native Aseprite tilesets.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "tileset.create",
+    "description": "Create a native tileset with empty tiles.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "count": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "name",
+        "width",
+        "height",
+        "count"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "tileset.delete",
+    "description": "Delete a tileset by one-based index.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "tileset.rename",
+    "description": "Rename a native tileset.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "index",
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "tileset.grid",
+    "description": "Set the sprite grid.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "tileset.info",
+    "description": "Inspect a native tileset.",
+    "effect": "read",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "image.import",
+    "description": "Import an image as a new layer in the target.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "name": {
+          "default": "Imported",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "path",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "input": "path"
+  },
+  {
+    "name": "image.stamp",
+    "description": "Stamp a PNG at a position in a target cel.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "x": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2048,
+          "maximum": 2048
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "path",
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    },
+    "input": "path"
+  },
+  {
+    "name": "image.outline",
+    "description": "Add a one-pixel exterior outline to a cel.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "color"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "image.replace_color",
+    "description": "Replace exact RGBA matches.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "image.grayscale",
+    "description": "Convert cel colors to luminance.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "image.threshold",
+    "description": "Convert cel to two colors using luminance.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "threshold": {
+          "default": 128,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "dark": {
+          "default": "#000000",
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "light": {
+          "default": "#ffffff",
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "threshold",
+        "dark",
+        "light"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "image.invert",
+    "description": "Invert RGB channels while retaining alpha.",
+    "effect": "edit",
+    "batch": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+]

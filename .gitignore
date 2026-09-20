@@ -1,0 +1,9 @@
+node_modules/
+server/build/
+dist/
+.local/
+*.log
+.DS_Store
+
+runtime/node
+runtime/node.exe

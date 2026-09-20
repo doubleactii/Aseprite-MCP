@@ -1,0 +1,50 @@
+local root=app.params['root'];local out=app.params['out']
+local function read(p) local f=assert(io.open(p,'rb'));local s=f:read('*a');f:close();return s end
+local M=dofile(root..'/extension/commands.lua');dofile(root..'/extension/vyi.lua')(M);M.palettes=json.decode(read(root..'/extension/palettes.json'));dofile(root..'/extension/runtime.lua')(M,json.decode(read(root..'/extension/catalog.json')))
+local count=0;local tested={}
+local function run(name,args) local result=M.dispatch(json.decode(json.encode{commands={{name=name,args=args or {}}},atomic=false}));count=count+1;tested[name]=true;print('PASS '..name);return result end
+local function pixel(x,y,c) local p=run('analysis.pixel',{x=x,y=y});assert(p.color==c,p.color..' ~= '..c) end
+run('sprite.create',{width=32,height=32,name='Smoke'})
+run('layer.rename',{layer='Layer 1',name='Base'})
+run('drawing.filled_rectangle',{x=5,y=8,width=22,height=18,color='#82d957',layer='Base'})
+pixel(5,8,'#82d957ff')
+run('drawing.ellipse',{x=3,y=3,width=26,height=26,color='#152b30',layer='Base'})
+run('drawing.stroke',{points={{x=4,y=4},{x=20,y=4}},color='#ffffff',size=1,layer='Base'})
+run('drawing.pattern',{x=8,y=12,rows={{0,0,-1,0,0},{0,1,-1,0,1}},colors={'#152b30','#ffffff'},layer='Base'})
+run('layer.add',{name='Highlights'})
+run('drawing.pixels',{pixels={{x=8,y=9,color='#ffffff'},{x=9,y=9,color='#ffffff'}},layer='Highlights'})
+run('animation.add',{count=3,duration=100})
+run('cel.copy',{layer='Base',frame=1,to=2})
+run('transform.shift',{layer='Base',frame=2,dx=1,dy=0,wrap=true})
+run('animation.tag',{name='idle',from=1,to=4,direction='FORWARD'})
+run('palette.builtin',{name='sweetie-16'})
+run('palette.color',{index=0,color='#152b30'})
+run('palette.nearest',{color='#162c31'})
+run('selection.rectangle',{x=0,y=0,width=2,height=2})
+run('selection.invert')
+run('selection.clear')
+run('slice.create',{name='body',x=3,y=3,width=26,height=26})
+run('slice.pivot',{name='body',x=16,y=30})
+run('tileset.create',{name='terrain',width=16,height=16,count=4})
+run('tileset.info',{index=1})
+run('analysis.colors',{})
+run('analysis.validate',{})
+run('analysis.compare',{from=1,to=2})
+run('export.png',{path=out..'/slime.png',frame=1})
+run('export.sheet',{path=out..'/slime-sheet.png',columns=4})
+run('export.gif',{path=out..'/slime.gif'})
+run('export.tag',{path=out..'/slime-idle.gif',name='idle'})
+run('sprite.save',{path=out..'/slime.aseprite'})
+run('export.metadata',{path=out..'/slime.json'})
+run('vyi.skip',{layer='Base',frame=4,skip=true})
+run('vyi.preview',{layer='Base',frame=1})
+local manifest=run('vyi.export',{path=out..'/slime.vyi',layers={'Base'},merge=false})
+local mf=assert(io.open(out..'/vyi-manifest.json','wb'));mf:write(json.encode(manifest));mf:close()
+-- A later failing edit must roll back the first edit in a batch.
+local before=run('analysis.pixel',{x=0,y=0}).color
+local ok=pcall(function() M.dispatch{atomic=true,commands={{name='drawing.pixel',args={x=0,y=0,color='#ff0000',layer='Base',frame=1}},{name='layer.delete',args={layer='missing'}}}} end)
+assert(not ok,'Invalid batch must fail');pixel(0,0,before)
+-- Direct unknown fields are rejected at the editor boundary too.
+assert(not pcall(function()run('drawing.pixel',{x=0,y=0,color='#ffffff',evil=true})end))
+M.paused=true;assert(not pcall(function()run('drawing.pixel',{x=0,y=0,color='#ffffff'})end));M.paused=false
+local f=assert(io.open(out..'/result.json','wb'));f:write(json.encode{passed=count,tested=tested,rollback=true,validation=true,version=tostring(app.version)});f:close();print('SMOKE OK: '..count)
