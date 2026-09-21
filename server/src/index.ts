@@ -42,10 +42,22 @@ async function main(){
   if(!args.success)throw new McpError(ErrorCode.InvalidParams,`Invalid arguments for prompt ${request.params.name}: ${(args as {error:Error}).error.message}`);
   return (await Promise.resolve(p.callback(args.data,extra))) as GetPromptResult;
  });
+ const innerServer = server.server as any;
+ const originalOnInitialize = innerServer._oninitialize.bind(innerServer);
+ innerServer._oninitialize = async (request: any) => {
+  const res = await originalOnInitialize(request);
+  const client = request.params?.clientInfo;
+  if (client && client.name) bridge.setClientInfo({ name: client.name, version: client.version ?? '' });
+  return res;
+ };
  await server.connect(new StdioServerTransport());
- const host=server.server.getClientVersion();
- bridge.setClientInfo(host ? {name:host.name,version:host.version} : undefined);
- let shuttingDown=false;
+ const host = server.server.getClientVersion();
+ if (host && host.name) {
+  bridge.setClientInfo({ name: host.name, version: host.version ?? '' });
+ } else {
+  bridge.setClientInfo({ name: process.env.MCP_CLIENT_NAME || 'AI Client', version: 'MCP' });
+ }
+ let shuttingDown = false;
  const close=async()=>{
   if(shuttingDown)return;
   shuttingDown=true;

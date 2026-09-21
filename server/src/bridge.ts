@@ -59,7 +59,8 @@ export class Bridge {
     if(m.type!=='hello' || typeof m.proof!=='string' || !/^[a-f0-9]{64}$/.test(m.proof) || !timingSafeEqual(Buffer.from(m.proof),Buffer.from(expected))){this.lastConnectionError='Aseprite reached the bridge, but pairing authentication failed.';ws.close(1008,'Authentication failed');return;}
     if(this.peer){ws.close(1008,'One editor is already connected');return;}
     authenticated=true;clearTimeout(timer);this.peer=ws;this.uncertain=false;
-    ws.send(JSON.stringify({type:'ready',protocol:1}));if(this.clientInfo)ws.send(JSON.stringify({type:'client',client:this.clientInfo}));return;
+    if(this.clientInfo)ws.send(JSON.stringify({type:'client',client:this.clientInfo}));
+    ws.send(JSON.stringify({type:'ready',protocol:1}));return;
    }
    if(m.type==='result' && this.pending?.id===m.id){
     const p=this.pending!;this.pending=undefined;clearTimeout(p.timer);

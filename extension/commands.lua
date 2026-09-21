@@ -48,7 +48,7 @@ local function decodeRLE(str,w,h,paletteMap)
  local total=w*h
  local idx=0
  for part in str:gmatch('[^,]+') do
-  local valStr,countStr=part:match('^([^:]+):(%d+)$')
+  local valStr,countStr=part:match('^([%-]?%d+):(%d+)$')
   if not valStr then error('Invalid RLE item: '..tostring(part),0) end
   local val=tonumber(valStr)
   local count=tonumber(countStr)

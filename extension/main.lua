@@ -33,11 +33,14 @@ connect=function()
     if type(m.nonce)~='string' or #m.nonce~=64 or type(m.proof)~='string' or m.proof~=crypto.hmac(config.token,'server:'..m.nonce) then stop();return end
     verified=true
     ws:sendText(json.encode{type='hello',proof=crypto.hmac(config.token,'client:'..m.nonce)})
+   elseif m.type=='client' and type(m.client)=='table' then
+    clientInfo=m.client
    elseif m.type=='ready' and m.protocol==1 and verified then
     connected=true
-    local who=(clientInfo and ((clientInfo.name or 'AI host')..' '..(clientInfo.version or '')) or 'AI host')
-    app.alert{title='Aseprite MCP Pro',text={'Connected — ready for AI requests.','AI host: '..who}}
-   elseif m.type=='client' and type(m.client)=='table' then clientInfo=m.client
+    local who=(clientInfo and ((clientInfo.name or 'AI host')..(clientInfo.version and (' '..clientInfo.version) or '')) or 'Connected AI Client')
+    if app.isUIAvailable and not app.alertShown then
+     -- Log or status banner rather than blocking modal
+    end
    elseif m.type=='request' and connected and type(m.id)=='string' then
     local success,result=pcall(engine.dispatch,m.payload)
     if success and config.autoOpenGenerated~=false and type(m.payload)=='table' and type(m.payload.commands)=='table' then for _,cmd in ipairs(m.payload.commands) do if cmd.name=='sprite.save' and type(cmd.args)=='table' and type(cmd.args.path)=='string' then pcall(app.open,cmd.args.path) end end end
@@ -56,7 +59,7 @@ function init(plugin)
  plugin:newMenuGroup{id='aseprite_mcp_menu',title='AI Connection',group='file_scripts'}
  plugin:newCommand{id='AsepriteMcpConnect',title='Connect / Reconnect',group='aseprite_mcp_menu',onclick=connect}
  plugin:newCommand{id='AsepriteMcpPause',title='Pause AI control',group='aseprite_mcp_menu',onclick=function() engine.paused=not engine.paused;plugin.preferences.paused=engine.paused end,onchecked=function() return engine.paused end}
- plugin:newCommand{id='AsepriteMcpStatus',title='Connection status',group='aseprite_mcp_menu',onclick=function() local who=(clientInfo and ((clientInfo.name or 'Unknown AI')..' '..(clientInfo.version or '')) or 'AI host not identified');local state=connected and 'Connected — ready for AI requests.' or 'Waiting for AI client — open the configured AI app.';app.alert{title='AI Connection',text={state,'AI host: '..who,(engine.paused and 'Paused — AI control is paused.' or 'AI control is enabled.'),'Edits are undoable. Exports never replace files.','Arbitrary Lua: '..(engine.allowLua and 'enabled, asks every time' or 'disabled')}} end}
+ plugin:newCommand{id='AsepriteMcpStatus',title='Connection status',group='aseprite_mcp_menu',onclick=function() local who=(clientInfo and ((clientInfo.name or 'AI host')..(clientInfo.version and (' '..clientInfo.version) or '')) or (connected and 'Connected AI Client' or 'Waiting for AI host...'));local state=connected and 'Connected — ready for AI requests.' or 'Waiting for AI client — open the configured AI app.';app.alert{title='AI Connection',text={state,'AI host: '..who,(engine.paused and 'Paused — AI control is paused.' or 'AI control is enabled.'),'Edits are undoable. Exports never replace files.','Arbitrary Lua: '..(engine.allowLua and 'enabled, asks every time' or 'disabled')}} end}
  plugin:newCommand{id='AsepriteMcpConfig',title='Local configuration',group='aseprite_mcp_menu',onclick=showConfig}
  plugin:newCommand{id='AsepriteMcpDisconnect',title='Disconnect',group='aseprite_mcp_menu',onclick=stop}
  if config then connect() end
