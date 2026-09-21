@@ -2,6 +2,7 @@ import { pngSize } from './vyi.js';
 import { createHash } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { GetPromptRequestSchema, GetPromptResult, McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
@@ -31,9 +32,40 @@ async function main(){
  });
  const guide=await readFile(new URL('../../skills/pixel-art/GUIDE.md',import.meta.url),'utf8');
  server.registerResource('pixel-art-guide','aseprite://guide',{description:'Efficient pixel art workflow, animation timing and safety.',mimeType:'text/markdown'},uri=>({contents:[{uri:uri.href,text:guide}]}));
- server.registerPrompt('create-sprite',{description:'Plan, draw, inspect, animate, validate and export a game-ready sprite.',argsSchema:{subject:z.string(),size:z.string().optional()}},({subject,size})=>({messages:[{role:'user',content:{type:'text',text:`Create ${subject}, ${size??'32x32'} pixels. Read aseprite://guide. Use a limited palette and named layers. Batch coherent edits, preview the silhouette and final animation, validate timing, then save an .aseprite source and a PNG sheet with metadata under new filenames. Ask about engine-specific output only if needed.`}}]}));
+ server.registerPrompt('create-sprite',{description:'Plan, draw, inspect, animate, validate and export a game-ready sprite.',argsSchema:{subject:z.string().optional().describe('Subject or description of the sprite (e.g. character, sword, tree)'),size:z.string().optional().describe('Canvas dimensions, default 32x32')}},({subject,size})=>({messages:[{role:'user',content:{type:'text',text:`Create ${subject??'sprite'}, ${size??'32x32'} pixels. Read aseprite://guide. Use a limited palette and named layers. Batch coherent edits, preview the silhouette and final animation, validate timing, then save an .aseprite source and a PNG sheet with metadata under new filenames. Ask about engine-specific output only if needed.`}}]}));
+ server.server.setRequestHandler(GetPromptRequestSchema,async(request,extra)=>{
+  const p=(server as unknown as {_registeredPrompts:Record<string,{enabled:boolean,argsSchema?:z.ZodTypeAny,callback:(args:unknown,extra:unknown)=>unknown}>})._registeredPrompts[request.params.name];
+  if(!p)throw new McpError(ErrorCode.InvalidParams,`Prompt ${request.params.name} not found`);
+  if(!p.enabled)throw new McpError(ErrorCode.InvalidParams,`Prompt ${request.params.name} disabled`);
+  const rawArgs=request.params.arguments??{};
+  const args=p.argsSchema?(await p.argsSchema.safeParseAsync(rawArgs)):{success:true,data:{}};
+  if(!args.success)throw new McpError(ErrorCode.InvalidParams,`Invalid arguments for prompt ${request.params.name}: ${(args as {error:Error}).error.message}`);
+  return (await Promise.resolve(p.callback(args.data,extra))) as GetPromptResult;
+ });
  await server.connect(new StdioServerTransport());
- let shuttingDown=false;const close=async()=>{if(shuttingDown)return;shuttingDown=true;await bridge.close();await server.close();};
- process.once('SIGINT',()=>void close());process.once('SIGTERM',()=>void close());process.stdin.once('end',()=>void close());
+ const host=server.server.getClientVersion();
+ bridge.setClientInfo(host ? {name:host.name,version:host.version} : undefined);
+ let shuttingDown=false;
+ const close=async()=>{
+  if(shuttingDown)return;
+  shuttingDown=true;
+  try{await bridge.close();}catch{}
+  try{await server.close();}catch{}
+  process.exit(0);
+ };
+ process.once('SIGINT',()=>void close());
+ process.once('SIGTERM',()=>void close());
+ process.once('SIGHUP',()=>void close());
+ process.once('disconnect',()=>void close());
+ process.stdin.once('end',()=>void close());
+ process.stdin.once('close',()=>void close());
+ process.stdin.on('error',()=>void close());
+ const parentWatchdog=setInterval(()=>{
+  if(process.ppid===1){
+   clearInterval(parentWatchdog);
+   void close();
+  }
+ },1000);
+ parentWatchdog.unref();
 }
 main().catch(e=>{console.error(`Aseprite MCP Pro: ${e instanceof Error?e.message:e}`);process.exit(1);});

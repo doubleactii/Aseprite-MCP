@@ -18,6 +18,43 @@ export class Engine {
    const data=decodeVyi(await readFile(args.path as string,'utf8'));const stage=await this.files.stage(`import-${randomUUID()}.json`,['.json']);
    try{const manifest=await prepareImport(data,args.icon as number,dirname(stage.staged));await writeFile(stage.staged,JSON.stringify(manifest));return await this.bridge.request({commands:[{name,args:{path:stage.staged,icon:args.icon}}],atomic:false});}finally{await stage.cleanup();}
   }
+  if(name==='sprite.build_animation'){
+   const exports=Array.isArray(args.exports)?args.exports:[];
+   const baseName=typeof args.name==='string'&&args.name?args.name:'Animation';
+   const extMap:Record<string,{file:string,ext:string}>={
+    aseprite:{file:`${baseName}.aseprite`,ext:'.aseprite'},
+    sheet:{file:`${baseName}-sheet.png`,ext:'.png'},
+    metadata:{file:`${baseName}.json`,ext:'.json'},
+    gif:{file:`${baseName}.gif`,ext:'.gif'},
+    vyi:{file:`${baseName}.vyi`,ext:'.vyi'}
+   };
+   const stagedMap:Record<string,any>={};
+   const stagedArgs:Record<string,string>={};
+   for(const key of exports){
+    const info=extMap[key];
+    if(info){
+     const stage=await this.files.stage(info.file,[info.ext]);
+     stagedMap[key]=stage;
+     stagedArgs[key]=stage.staged;
+    }
+   }
+   args.exportPaths=stagedArgs;
+   try{
+    const result=await this.bridge.request({commands:[{name,args}],atomic:false});
+    if(stagedMap.vyi&&result&&result.vyiManifest){
+     await writeFile(stagedMap.vyi.staged,await encodeManifest(result.vyiManifest,dirname(stagedMap.vyi.staged)));
+    }
+    const committed:Record<string,{path:string,bytes:number}>={};
+    for(const [key,stage] of Object.entries(stagedMap)){
+     committed[key]=await stage.commit();
+    }
+    return {...result,files:committed};
+   }finally{
+    for(const stage of Object.values(stagedMap)){
+     await stage.cleanup().catch(()=>{});
+    }
+   }
+  }
   if(c.output){const stage=await this.files.stage(args[c.output] as string,c.extensions!);args[c.output]=stage.staged;
    try{const result=await this.bridge.request({commands:[{name,args}],atomic:false});if(name==='vyi.export')await writeFile(stage.staged,await encodeManifest(result,dirname(stage.staged)));return await stage.commit();}finally{await stage.cleanup();}
   }

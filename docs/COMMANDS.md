@@ -1,6 +1,6 @@
 # Command reference
 
-122 commands in 16 categories, exposed through six compact MCP tools. Discover schemas on demand with `aseprite_discover`. Coordinates are zero-based; frame, layer-stack and tileset indices are one-based. Palette indices are zero-based. Canvas limit: 1024 × 1024. New sprites use RGB.
+123 commands in 16 categories, exposed through six compact MCP tools. Discover schemas on demand with `aseprite_discover`. Coordinates are zero-based; frame, layer-stack and tileset indices are one-based. Palette indices are zero-based. Canvas limit: 1024 × 1024. New sprites use RGB.
 
 ## sprite
 
@@ -16,6 +16,7 @@
 | `sprite.crop` | Crop the canvas. | edit | yes |
 | `sprite.duplicate` | Duplicate target into a new untitled sprite. | edit | no |
 | `sprite.close` | Close only an unmodified sprite. Save your work in the editor first. | edit | no |
+| `sprite.build_animation` | Create, draw, animate and export a multi-frame sprite in a single operation. | edit | no |
 
 ## drawing
 

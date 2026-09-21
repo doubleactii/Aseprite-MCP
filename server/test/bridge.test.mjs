@@ -19,8 +19,8 @@ test('mutual auth, request correlation, serial execution and reconnect',async()=
  const next=await peer(config);await once(next,'message');assert.equal(bridge.status().connected,true);next.terminate();
  }finally{await bridge.close();}
 });
-test('browser origins rejected before authentication',async()=>{
- const {config,bridge}=await fixture();try{const ws=new WebSocket(`ws://127.0.0.1:${config.port}/aseprite`,{origin:'https://evil.example'});const [error]=await once(ws,'error');assert.match(error.message,/403/);}finally{await bridge.close();}
+test('native origins are authenticated instead of rejected',async()=>{
+ const {config,bridge}=await fixture();try{const ws=new WebSocket(`ws://127.0.0.1:${config.port}/aseprite`,{origin:'app://aseprite'});const [raw]=await once(ws,'message');const challenge=JSON.parse(raw.toString());ws.send(JSON.stringify({type:'hello',proof:createHmac('sha256',config.token).update('client:'+challenge.nonce).digest('hex')}));await once(ws,'message');assert.equal(bridge.status().connected,true);ws.terminate();}finally{await bridge.close();}
 });
 test('timeout is never replayed and requires explicit reconnect',async()=>{
  const {config,bridge}=await fixture(30);try{const ws=await peer(config);await once(ws,'message');let requests=0;ws.on('message',()=>requests++);await assert.rejects(bridge.request({}),/NOT retried/);assert.equal(requests,1);await assert.rejects(bridge.request({}),/timed out/);assert.equal(bridge.status().needsReconnect,true);ws.terminate();}finally{await bridge.close();}

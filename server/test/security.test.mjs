@@ -8,8 +8,8 @@ import {Engine} from '../build/engine.js';
 import {catalog,validateCommand} from '../build/catalog.js';
 import {install,mergeJson,configureClient} from '../build/setup.js';
 const temp=()=>mkdtemp(join(tmpdir(),'aseprite-test-'));
-test('122 unique commands, 16 categories; strict schemas and bounds',()=>{
- assert.equal(catalog.length,122);assert.equal(new Set(catalog.map(c=>c.name)).size,122);assert.equal(new Set(catalog.map(c=>c.name.split('.')[0])).size,16);
+test('123 unique commands, 16 categories; strict schemas and bounds',()=>{
+ assert.equal(catalog.length,123);assert.equal(new Set(catalog.map(c=>c.name)).size,123);assert.equal(new Set(catalog.map(c=>c.name.split('.')[0])).size,16);
  for(const args of [{width:0,height:32},{width:4096,height:32},{width:32,height:32,script:'evil'},{width:NaN,height:1}])assert.throws(()=>validateCommand('sprite.create',args));
  assert.throws(()=>validateCommand('__proto__',{}));assert.throws(()=>validateCommand('drawing.pixel',{x:0,y:0,color:'red'}));
 });

@@ -20,6 +20,7 @@ local function canvas(a) local s,l,f=target(a);check(s.colorMode==ColorMode.RGB,
 local function put(s,im,x,y,p) if x>=0 and y>=0 and x<s.width and y<s.height and (s.selection.isEmpty or s.selection:contains(Point(x,y))) then im:drawPixel(x,y,p) end end
 local function commit(s,l,f,im) local c=l:cel(f);if c then c.image=im;c.position=Point(0,0) else s:newCel(l,f,im,Point(0,0)) end end
 local function edit(a,fn) local s,l,f,im=canvas(a);fn(s,im);commit(s,l,f,im);return {changed=true} end
+local function write(path,text) local f=check(io.open(path,'wb'),'Could not write file.');f:write(text);f:close() end
 local function line(s,im,x,y,x2,y2,p,size)
  local dx=math.abs(x2-x);local sx=x<x2 and 1 or -1;local dy=-math.abs(y2-y);local sy=y<y2 and 1 or -1;local err=dx+dy;size=size or 1;spend((dx-dy+1)*size*size)
  while true do for by=0,size-1 do for bx=0,size-1 do put(s,im,x+bx,y+by,p) end end;if x==x2 and y==y2 then break end;local e=2*err;if e>=dy then err=err+dy;x=x+sx end;if e<=dx then err=err+dx;y=y+sy end end
@@ -42,6 +43,100 @@ H['sprite.resize']=function(a) local s=sprite();check(a.width*a.height*math.max(
 H['sprite.crop']=function(a) sprite():crop(rect(a)) end
 H['sprite.duplicate']=function() local s=Sprite(sprite());M.target=s;return meta(s) end
 H['sprite.close']=function() local s=sprite();check(not s.isModified,'Unsaved changes. Save in Aseprite before closing.');s:close();M.target=nil end
+local function decodeRLE(str,w,h,paletteMap)
+ local im=Image(w,h,ColorMode.RGB)
+ local total=w*h
+ local idx=0
+ for part in str:gmatch('[^,]+') do
+  local valStr,countStr=part:match('^([^:]+):(%d+)$')
+  if not valStr then error('Invalid RLE item: '..tostring(part),0) end
+  local val=tonumber(valStr)
+  local count=tonumber(countStr)
+  check(count and count>0 and idx+count<=total,'RLE span exceeds canvas bounds: '..tostring(part))
+  if val and val>=0 then
+   local col=paletteMap[val]
+   if not col then error('Palette index out of bounds in RLE: '..tostring(val),0) end
+   for _=1,count do
+    local x=idx%w
+    local y=math.floor(idx/w)
+    im:drawPixel(x,y,col)
+    idx=idx+1
+   end
+  else
+   idx=idx+count
+  end
+ end
+ check(idx==total,'RLE total pixels ('..idx..') does not match canvas size ('..total..').')
+ return im
+end
+H['sprite.build_animation']=function(a)
+ check(a.width*a.height<=1048576,'Canvas too large.');
+ local s=Sprite(a.width,a.height,ColorMode.RGB)
+ M.target=s
+ if a.name then s.filename=a.name end
+ local p=Palette(#a.palette)
+ local paletteRgba={}
+ for i,c in ipairs(a.palette) do
+  local col=rgba(c)
+  paletteRgba[i-1]=col
+  p:setColor(i-1,Color{rgbaPixel=col})
+ end
+ s:setPalette(p)
+ local l=s.layers[1]
+ l.name=a.layer or 'Main'
+ local numFrames=#a.frames
+ for i=2,numFrames do s:newEmptyFrame(i) end
+ for i,fData in ipairs(a.frames) do
+  local dur=(fData.duration or a.frameDuration or 120)/1000
+  s.frames[i].duration=dur
+  local im
+  if fData.rle then
+   im=decodeRLE(fData.rle,a.width,a.height,paletteRgba)
+  elseif fData.rows then
+   im=Image(a.width,a.height,ColorMode.RGB)
+   for y,row in ipairs(fData.rows) do
+    if y<=a.height then
+     for x,cIdx in ipairs(row) do
+      if x<=a.width and cIdx>=0 and paletteRgba[cIdx] then
+       im:drawPixel(x-1,y-1,paletteRgba[cIdx])
+      end
+     end
+    end
+   end
+  else
+   im=Image(a.width,a.height,ColorMode.RGB)
+  end
+  local c=l:cel(i)
+  if c then c.image=im;c.position=Point(0,0) else s:newCel(l,i,im,Point(0,0)) end
+ end
+ if a.tags then
+  for _,t in ipairs(a.tags) do
+   local tagObj=s:newTag(t.from,t.to)
+   tagObj.name=t.name
+   if t.direction and AniDir[t.direction] then tagObj.aniDir=AniDir[t.direction] end
+  end
+ end
+ local paths=a.exportPaths or {}
+ if paths.aseprite then s:saveCopyAs(paths.aseprite) end
+ if paths.sheet then
+  local cols=math.min(a.sheetColumns or 8,#s.frames)
+  local rows=math.ceil(#s.frames/cols)
+  local sheetIm=Image(cols*s.width,rows*s.height,ColorMode.RGB)
+  for i=1,#s.frames do
+   sheetIm:drawImage(rendered(s,i),Point(((i-1)%cols)*s.width,math.floor((i-1)/cols)*s.height))
+  end
+  sheetIm:saveAs(paths.sheet)
+ end
+ if paths.metadata then write(paths.metadata,json.encode(meta(s))) end
+ if paths.gif then s:saveCopyAs(paths.gif) end
+ local vyiManifest=nil
+ if paths.vyi and H['vyi.export'] then
+  vyiManifest=H['vyi.export']{path=paths.vyi,layers={l.name},merge=false,name=a.name}
+ end
+ local res=meta(s)
+ if vyiManifest then res.vyiManifest=vyiManifest end
+ return res
+end
 H['drawing.pixel']=function(a) return edit(a,function(s,im) put(s,im,a.x,a.y,rgba(a.color)) end) end
 H['drawing.pixels']=function(a) return edit(a,function(s,im) for _,p in ipairs(a.pixels) do put(s,im,p.x,p.y,rgba(p.color)) end end) end
 H['drawing.line']=function(a) return edit(a,function(s,im) line(s,im,a.x,a.y,a.x2,a.y2,rgba(a.color)) end) end

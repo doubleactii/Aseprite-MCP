@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc -p server && node scripts/generate.mjs",
     "test": "npm run build && node --test server/test/*.test.mjs",
-    "setup": "node server/build/setup.js",
+    "setup": "npm run build && node server/build/setup.js",
     "start": "node server/build/index.js",
     "doctor": "node server/build/setup.js --doctor",
     "package": "npm run build && node scripts/package.mjs",

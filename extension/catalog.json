@@ -211,6 +211,178 @@
     }
   },
   {
+    "name": "sprite.build_animation",
+    "description": "Create, draw, animate and export a multi-frame sprite in a single operation.",
+    "effect": "edit",
+    "batch": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "default": "Animation",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "palette": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+          }
+        },
+        "layer": {
+          "default": "Main",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "frameDuration": {
+          "default": 120,
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000
+        },
+        "frames": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 65536
+              },
+              "rows": {
+                "minItems": 1,
+                "maxItems": 1024,
+                "type": "array",
+                "items": {
+                  "minItems": 1,
+                  "maxItems": 1024,
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "maximum": 255
+                  }
+                }
+              },
+              "duration": {
+                "type": "integer",
+                "minimum": 10,
+                "maximum": 10000
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "tags": {
+          "default": [],
+          "maxItems": 32,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "from": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 256
+              },
+              "to": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 256
+              },
+              "direction": {
+                "default": "FORWARD",
+                "type": "string",
+                "enum": [
+                  "FORWARD",
+                  "REVERSE",
+                  "PING_PONG",
+                  "PING_PONG_REVERSE"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "from",
+              "to",
+              "direction"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "exports": {
+          "default": [],
+          "maxItems": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "aseprite",
+              "sheet",
+              "metadata",
+              "gif",
+              "vyi"
+            ]
+          }
+        },
+        "sheetColumns": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "exportPaths": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      },
+      "required": [
+        "name",
+        "width",
+        "height",
+        "palette",
+        "layer",
+        "frameDuration",
+        "frames",
+        "tags",
+        "exports",
+        "sheetColumns"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "drawing.pixel",
     "description": "Set one pixel.",
     "effect": "edit",

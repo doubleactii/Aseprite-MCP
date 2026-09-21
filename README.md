@@ -2,7 +2,7 @@
 
 **Tell your AI what to draw. Watch it take shape in Aseprite.**
 
-A local TypeScript MCP server and Lua extension for drawing pixel art, animation, and Vylocity `.vyi` export. **122 commands, 16 categories, six compact AI tools.** No cloud service, telemetry, paid API, or external image-generation service is built into the bridge. Your AI client handles the model connection and its own data policies.
+A local TypeScript MCP server and Lua extension for drawing pixel art, animation, aligned overlays, animation extension, variation sheets, and Vylocity `.vyi` export. **125 commands, 16 categories, six compact AI tools.** No cloud service, telemetry, paid API, or external image-generation service is built into the bridge. Your AI client handles the model connection and its own data policies.
 
 ## Start here
 
@@ -35,6 +35,8 @@ Setup installs only this extension, generates pairing credentials and backs up c
 - **Create:** “Draw a 32×32 forest ranger with a readable silhouette, six colors and a four-frame walk cycle.”
 - **Use inspiration:** “Use references/mood.png for lighting and color mood. Design a new creature with a different silhouette, anatomy and details. Don’t trace it.” Put the reference PNG in your artwork folder first.
 - **Export VYI:** “Export the Body and Equipment layers as separate icons in character.vyi. Use idle and walk tags as states.”
+- **Dress an animation:** “Lock Base, clone it into a Shirt overlay with matching frame alignment, then add a red jacket only on the Shirt layer.”
+- **Extend an animation:** “Extend the walk tag by four copied frames, then draw new contact and passing poses without moving the Base layer.”
 - **Inspect:** “Compare frames 1 and 2, then preview the canvas.”
 
 The reference tool **views without importing pixels**. The guide asks the assistant to extract broad visual principles, plan a distinct design and review similarities. Direct import and stamping are separate, explicit asset-reuse operations. This is a workflow for originality, not an originality detector or legal certification. See [the reference workflow](skills/pixel-art/GUIDE.md#reference-images-and-original-work).
@@ -66,7 +68,9 @@ In Aseprite, use **File → Scripts → AI Connection** to view status, pause co
 
 ## Designed for compact, bounded work
 
-Only six tools appear in the AI tool list: status, discover, execute, batch, preview and reference. The model requests schemas only when needed. A batch carries up to 64 edits and returns a compact completion count; indexed matrices and strokes avoid per-pixel tool calls. PNG previews are opt-in. There is no claim of a fixed percentage token saving: cost depends on the model and artwork.
+Only six tools appear in the AI tool list: status, discover, execute, batch, preview and reference. The model requests schemas only when needed. A batch carries up to 64 edits and returns a compact completion count; indexed matrices, aligned overlays, and strokes avoid per-pixel tool calls. PNG previews are opt-in. There is no claim of a fixed percentage token saving: cost depends on the model and artwork.
+
+The bridge is model-agnostic. A flagship model helps most with open-ended design and visual critique, but a smaller model can do excellent deterministic work when given a template, a reference brief, named layers, and milestone previews. Cloud AI is optional: users can connect the same MCP server through an MCP-capable local host backed by Ollama or another local inference runtime. Ollama by itself is a model runtime, not the MCP host; see [model and workflow choices](docs/AI_OPTIONS.md).
 
 Transport uses uncompressed loopback WebSocket and stdio MCP. Work runs serially, with bounded payloads and pixel budgets. The editor refreshes once per request. RGB canvases are limited to 1024×1024, 256 frames and 16 million aggregate cel pixels; typical 16–64px sprites are recommended. Some operations impose smaller cumulative limits to keep the editor responsive.
 
@@ -90,6 +94,6 @@ node scripts/fetch-runtime.mjs # Fetch + checksum-verify official Node LTS
 npm run package          # Host-specific release ZIP, bundled Node, extension archive
 ```
 
-Set `ASEPRITE_BIN` if Aseprite is not at the detected macOS Steam path. Editor tests create artifacts only under `.local/aseprite-smoke`; they do not install the extension or edit your AI configuration. `npm run package` builds only for the current OS/CPU. Windows/Linux launchers are included in source but require builds and testing on those systems.
+Set `ASEPRITE_BIN` if Aseprite is not at the detected macOS Steam path. Editor tests create artifacts only under `.local/aseprite-smoke`; they do not install the extension or edit your AI configuration. `npm run package` builds only for the current OS/CPU. Windows/Linux launchers are included in source but require builds and testing on those systems. See [the full command reference](docs/COMMANDS.md) and [model/workflow guidance](docs/AI_OPTIONS.md).
 
-The original ase2vyi format reference is [Active's Ase2Vyi](https://doubleactii.itch.io/ase2vyi). Godot integration is intentionally absent. Palette and dependency acknowledgements are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The original ase2vyi format reference is [Active's Ase2Vyi](https://doubleactii.itch.io/ase2vyi). Godot integration is intentionally absent. For professional terrain, tilesets, props, and animation prompts, read [the Pixel Art Prompt Playbook](docs/PIXEL_ART_PROMPT_PLAYBOOK.md). Palette and dependency acknowledgements are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

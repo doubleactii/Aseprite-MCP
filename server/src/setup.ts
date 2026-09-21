@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile, copyFile, cp, access, stat, chmod, lstat, realpath } from 'node:fs/promises';
 import { homedir, platform } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import { createInterface } from 'node:readline/promises';
@@ -20,15 +21,16 @@ export async function mergeJson(file:string,entry:unknown){
  if(value.mcpServers && (typeof value.mcpServers!=='object'||Array.isArray(value.mcpServers)))throw new Error('Client mcpServers config is invalid.');
  value.mcpServers={...value.mcpServers,'aseprite-mcp-pro':entry};await backup(file);await writeFile(file,JSON.stringify(value,null,2)+'\n',{mode:0o600});
 }
-export function clientEntry(configPath:string){return {command:process.execPath,args:[join(project,'server','build','index.js')],env:{ASEPRITE_MCP_CONFIG:configPath}};}
+export function clientEntry(configPath:string){const bundled=join(project,'runtime','node');const command=existsSync(bundled)?bundled:process.execPath;return {command,args:[join(project,'server','build','index.js')],env:{ASEPRITE_MCP_CONFIG:configPath}};}
 export async function install(options:{workspace:string;configPath:string;extensionDir:string;port?:number}){
  await safeDir(options.workspace);const workspace=await realpath(options.workspace);await safeDir(dirname(options.configPath));
- let old:Config|undefined;if(await exists(options.configPath))old=configSchema.parse(JSON.parse(await readFile(options.configPath,'utf8')));
- const config:Config={version:1,workspace,port:options.port??old?.port??19876,token:old?.token??randomBytes(32).toString('hex'),allowLua:false};
+ let old:Config|undefined;
+ if(await exists(options.configPath)){try{old=configSchema.parse(JSON.parse(await readFile(options.configPath,'utf8')))}catch{old=undefined;}}
+ const config:Config={version:1,workspace,port:options.port??old?.port??19876,token:old?.token??randomBytes(32).toString('hex'),allowLua:false,autoOpenGenerated:old?.autoOpenGenerated??true};
  // Never replace another extension or a symlink. Existing connection secrets stay stable on repair.
  if(await exists(options.extensionDir)){const manifest=JSON.parse(await readFile(join(options.extensionDir,'package.json'),'utf8'));if(manifest.name!=='aseprite-mcp-pro')throw new Error('Destination belongs to another extension.');}
  await safeDir(options.extensionDir);
- for(const name of ['package.json','main.lua','commands.lua','runtime.lua','crypto.lua','vyi.lua','palettes.json','catalog.json']){const dest=join(options.extensionDir,name);if(await exists(dest)&&(await lstat(dest)).isSymbolicLink())throw new Error('Refusing symlink extension file.');await copyFile(join(project,'extension',name),dest);}
+ for(const name of ['__info.json','package.json','main.lua','commands.lua','runtime.lua','crypto.lua','vyi.lua','palettes.json','catalog.json']){const source=join(project,'extension',name);const dest=join(options.extensionDir,name);if(await exists(dest)&&(await lstat(dest)).isSymbolicLink())throw new Error('Refusing symlink extension file.');await copyFile(source,dest);const [expected,installed]=await Promise.all([readFile(source),readFile(dest)]);if(!expected.equals(installed))throw new Error(`Extension install verification failed for ${name}.`);}
  await backup(options.configPath);await writeFile(options.configPath,JSON.stringify(config,null,2)+'\n',{mode:0o600});await chmod(options.configPath,0o600);
  const connection=join(options.extensionDir,'connection.json');if(await exists(connection) && (await lstat(connection)).isSymbolicLink())throw new Error('Refusing a symlink connection file.');await writeFile(connection,JSON.stringify(config)+'\n',{mode:0o600});await chmod(connection,0o600);
  return config;
@@ -38,7 +40,15 @@ export async function configureClient(client:string,configPath:string,home=homed
  if(client==='codex'){
   const file=join(home,'.codex','config.toml');await safeDir(dirname(file));const text=await exists(file)?await readFile(file,'utf8'):'';
   const block=`\n[mcp_servers.aseprite-mcp-pro]\ncommand = ${JSON.stringify(entry.command)}\nargs = ${JSON.stringify(entry.args)}\n\n[mcp_servers.aseprite-mcp-pro.env]\nASEPRITE_MCP_CONFIG = ${JSON.stringify(configPath)}\n`;
-  if(text.includes('[mcp_servers.aseprite-mcp-pro]')){if(text.includes(block.trim()))return file;throw new Error('Aseprite MCP is already configured in Codex. Use the generated client-config.toml to update that entry.');}
+  if(text.includes('[mcp_servers.aseprite-mcp-pro]')){
+   const cleaned=text
+    .replace(/\n\[mcp_servers\.aseprite-mcp-pro\.env\][\s\S]*?(?=\n\[|\s*$)/g,'')
+    .replace(/\n\[mcp_servers\.aseprite-mcp-pro\][\s\S]*?(?=\n\[|\s*$)/g,'')
+    .replace(/\s*$/,'');
+   const updated=cleaned+block;
+   if(updated!==text){await backup(file);await writeFile(file,updated,{mode:0o600});}
+   return file;
+  }
   await backup(file);await writeFile(file,text+block,{mode:0o600});return file;
  }
  if(client==='claude-desktop'){
@@ -63,7 +73,7 @@ async function main(){
   console.log('\n  ASEPRITE MCP PRO\n  Your imagination. Your editor. Connected.\n\nSetup installs the Aseprite extension and connects your AI app.\nNo account, API key, or administrator password is needed.\nKeep this application folder in its current location after setup.\n');
   const folder=(await rl.question(`1. Where should artwork be saved?\n   Press Enter for ${join(homedir(),'Pictures','AI Pixel Art')}\n> `)).trim()||join(homedir(),'Pictures','AI Pixel Art');
   console.log('\n2. Choose your AI app:\n   1  Codex\n   2  Claude Desktop\n   3  Claude Code\n   4  Gemini CLI\n   5  Another MCP app (generate configuration)');
-  const choice=(await rl.question('> ')).trim();const clients:Record<string,string>={'1':'codex','2':'claude-desktop','3':'claude-code','4':'gemini','5':'other'};if(!clients[choice])throw new Error('Choose a number from 1 to 5. Reopen Setup to try again.');
+  const choice=(await rl.question('> ')).trim()||'1';const clients:Record<string,string>={'1':'codex','2':'claude-desktop','3':'claude-code','4':'gemini','5':'other'};if(!clients[choice])throw new Error('Choose a number from 1 to 5. Reopen Setup to try again.');
   const configPath=defaultConfig();const dir=extensionPath();const client=clients[choice]!;
   await install({workspace:resolve(folder),configPath,extensionDir:dir});
   // Always provide fallback configurations, including when a client already has a conflicting entry.

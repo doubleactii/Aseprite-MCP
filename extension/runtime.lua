@@ -7,10 +7,16 @@ return function(M,catalog)
  M.plain=plain
  local function validate(v,s,path)
   if v==nil and s.default~=nil then v=s.default end
-  if s.type=='object' then
-   assert(type(v)=='table',path..' must be an object');local out={};local required={};for _,k in ipairs(s.required or {}) do required[k]=true end
-   for k,_ in pairs(v) do assert(s.properties[k],path..': unknown field '..tostring(k)) end
-   for k,p in pairs(s.properties) do assert(v[k]~=nil or p.default~=nil or not required[k],path..': missing '..k);if v[k]~=nil or p.default~=nil then out[k]=validate(v[k],p,path..'.'..k) end end;return out
+   if s.type=='object' then
+    assert(type(v)=='table',path..' must be an object');local out={};local required={};for _,k in ipairs(s.required or {}) do required[k]=true end
+    local props=s.properties or {}
+    for k,_ in pairs(v) do
+     if not props[k] then
+      assert(s.additionalProperties~=false,path..': unknown field '..tostring(k))
+      if type(s.additionalProperties)=='table' then out[k]=validate(v[k],s.additionalProperties,path..'.'..k) else out[k]=v[k] end
+     end
+    end
+    for k,p in pairs(props) do assert(v[k]~=nil or p.default~=nil or not required[k],path..': missing '..k);if v[k]~=nil or p.default~=nil then out[k]=validate(v[k],p,path..'.'..k) end end;return out
   elseif s.type=='array' then assert(type(v)=='table',path..' must be an array');assert(#v>=(s.minItems or 0) and #v<=(s.maxItems or 65536),path..' array size out of range');local out={};for i,item in ipairs(v) do out[i]=validate(item,s.items,path..'['..i..']') end;return out
   elseif s.type=='integer' or s.type=='number' then assert(type(v)=='number' and v==v and math.abs(v)<math.huge,path..' must be a finite number');if s.type=='integer' then assert(v%1==0,path..' must be an integer') end;assert(v>=(s.minimum or -math.huge) and v<=(s.maximum or math.huge),path..' out of range')
   elseif s.type=='string' then assert(type(v)=='string',path..' must be text');assert(#v>=(s.minLength or 0) and #v<=(s.maxLength or 1048576),path..' text length out of range')

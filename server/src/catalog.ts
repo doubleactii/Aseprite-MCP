@@ -23,6 +23,28 @@ add('sprite','resize','Resize all cels using nearest-neighbor sampling.',{width:
 add('sprite','crop','Crop the canvas.',rect);
 add('sprite','duplicate','Duplicate target into a new untitled sprite.',{},solo);
 add('sprite','close','Close only an unmodified sprite. Save your work in the editor first.',{},solo);
+add('sprite','build_animation','Create, draw, animate and export a multi-frame sprite in a single operation.',{
+ name:name.default('Animation'),
+ width:size,
+ height:size,
+ palette:z.array(color).min(1).max(256),
+ layer:name.default('Main'),
+ frameDuration:n(10,10000).default(120),
+ frames:z.array(z.object({
+  rle:z.string().min(1).max(65536).optional(),
+  rows:z.array(z.array(n(-1,255)).min(1).max(1024)).min(1).max(1024).optional(),
+  duration:n(10,10000).optional()
+ }).strict()).min(1).max(256),
+ tags:z.array(z.object({
+  name,
+  from:frame,
+  to:frame,
+  direction:z.enum(['FORWARD','REVERSE','PING_PONG','PING_PONG_REVERSE']).default('FORWARD')
+ }).strict()).max(32).default([]),
+ exports:z.array(z.enum(['aseprite','sheet','metadata','gif','vyi'])).max(5).default([]),
+ sheetColumns:n(1,64).default(8),
+ exportPaths:z.record(z.string(),path).optional()
+},solo);
 add('drawing','pixel','Set one pixel.',{x:coord,y:coord,...paint});
 add('drawing','pixels','Draw many pixels in one operation.',{pixels:z.array(z.object({x:coord,y:coord,color}).strict()).min(1).max(16384),...target});
 add('drawing','line','Draw a crisp integer line.',{x:coord,y:coord,x2:coord,y2:coord,...paint});
