@@ -41,7 +41,7 @@ add('sprite','build_animation','Create, draw, animate and export a multi-frame s
   to:frame,
   direction:z.enum(['FORWARD','REVERSE','PING_PONG','PING_PONG_REVERSE']).default('FORWARD')
  }).strict()).max(32).default([]),
- exports:z.array(z.enum(['aseprite','sheet','metadata','gif','vyi'])).max(5).default([]),
+ exports:z.array(z.enum(['aseprite','sheet','metadata','gif','vyi'])).max(5).default(['aseprite','sheet','gif','vyi']),
  sheetColumns:n(1,64).default(8),
  exportPaths:z.record(z.string(),path).optional()
 },solo);

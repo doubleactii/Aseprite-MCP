@@ -335,7 +335,12 @@
           }
         },
         "exports": {
-          "default": [],
+          "default": [
+            "aseprite",
+            "sheet",
+            "gif",
+            "vyi"
+          ],
           "maxItems": 5,
           "type": "array",
           "items": {

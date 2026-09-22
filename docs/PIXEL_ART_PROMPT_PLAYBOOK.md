@@ -71,7 +71,7 @@ avoid repeating the same cluster pattern.
 Layers: Base, Texture, Highlights, Details, CollisionGuide. Preview a 5×5 test
 map using every legal corner and transition. Fix seams, doubled outlines,
 one-pixel gaps, and collision mismatches before exporting a PNG sheet, JSON
-metadata, and VYI where requested. Validate that no pixel leaves its 32×32 cell.
+metadata, and default VYI (`.vyi`). Validate that no pixel leaves its 32×32 cell.
 ```
 
 Ask for variants after the base set is correct:

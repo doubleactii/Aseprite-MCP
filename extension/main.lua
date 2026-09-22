@@ -23,7 +23,7 @@ connect=function()
  stop();if not config then app.alert('Run Aseprite MCP Pro Setup first, then restart Aseprite.');return end
  if not WebSocket then app.alert('This Aseprite build has no WebSocket support. Update Aseprite to a current 1.3 release with scripting enabled.');return end
  local verified=false
- ws=WebSocket{url='ws://127.0.0.1:'..config.port..'/aseprite',deflate=false,minreconnectwait=1,maxreconnectwait=30,onreceive=function(mt,data)
+ ws=WebSocket{url='ws://127.0.0.1:'..config.port..'/aseprite',deflate=false,minreconnectwait=1,maxreconnectwait=2,onreceive=function(mt,data)
   if mt==WebSocketMessageType.OPEN then verified=false;connected=false
   elseif mt==WebSocketMessageType.CLOSE then connected=false;verified=false
   elseif mt==WebSocketMessageType.TEXT then
@@ -43,7 +43,6 @@ connect=function()
     end
    elseif m.type=='request' and connected and type(m.id)=='string' then
     local success,result=pcall(engine.dispatch,m.payload)
-    if success and config.autoOpenGenerated~=false and type(m.payload)=='table' and type(m.payload.commands)=='table' then for _,cmd in ipairs(m.payload.commands) do if cmd.name=='sprite.save' and type(cmd.args)=='table' and type(cmd.args.path)=='string' then pcall(app.open,cmd.args.path) end end end
     local response={type='result',id=m.id,ok=success};if success then response.result=result else response.error=tostring(result):sub(1,1024) end
     local encoded=json.encode(response);if #encoded>1048576 then encoded=json.encode{type='result',id=m.id,ok=false,error='Response exceeds 1 MiB.'} end
     if ws then ws:sendText(encoded) end

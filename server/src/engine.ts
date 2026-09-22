@@ -19,7 +19,8 @@ export class Engine {
    try{const manifest=await prepareImport(data,args.icon as number,dirname(stage.staged));await writeFile(stage.staged,JSON.stringify(manifest));return await this.bridge.request({commands:[{name,args:{path:stage.staged,icon:args.icon}}],atomic:false});}finally{await stage.cleanup();}
   }
   if(name==='sprite.build_animation'){
-   const exports=Array.isArray(args.exports)?args.exports:[];
+   const requestedExports=Array.isArray(args.exports)&&args.exports.length>0?args.exports:['aseprite','sheet','gif','vyi'];
+   const exports=requestedExports.includes('vyi')?requestedExports:[...requestedExports,'vyi'];
    const baseName=typeof args.name==='string'&&args.name?args.name:'Animation';
    const extMap:Record<string,{file:string,ext:string}>={
     aseprite:{file:`${baseName}.aseprite`,ext:'.aseprite'},
