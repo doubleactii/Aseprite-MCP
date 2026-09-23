@@ -17,5 +17,10 @@ test('real SDK client negotiates stdio, discovers compact tools, reads guide, an
  const discover=await client.callTool({name:'aseprite_discover',arguments:{names:['vyi.export']}});assert.equal(JSON.parse(discover.content[0].text)[0].name,'vyi.export');
  const guide=await client.readResource({uri:'aseprite://guide'});assert.match(guide.contents[0].text,/Reference images/);
  const result=await client.callTool({name:'aseprite_execute',arguments:{name:'sprite.create',args:{width:32,height:32}}});assert.equal(result.isError,true);assert.match(result.content[0].text,/Open Aseprite/);
- }finally{await client.close();await rm(dir,{recursive:true,force:true});}
+  const prompts=await client.listPrompts();assert.equal(prompts.prompts.length,1);assert.equal(prompts.prompts[0].name,'create-sprite');
+  // Regression: no-args call must not throw "expected object, received undefined"
+  const noArgs=await client.getPrompt({name:'create-sprite',arguments:{}});assert.ok(noArgs.messages[0].content.text.includes('Read aseprite://guide'));
+  // With explicit args
+  const withArgs=await client.getPrompt({name:'create-sprite',arguments:{subject:'sword',size:'16x16'}});assert.ok(withArgs.messages[0].content.text.includes('sword'));assert.ok(withArgs.messages[0].content.text.includes('16x16'));
+  }finally{await client.close();await rm(dir,{recursive:true,force:true});}
 });

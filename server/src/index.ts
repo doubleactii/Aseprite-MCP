@@ -111,9 +111,9 @@ async function buildServer(config: ReturnType<typeof loadConfig> extends Promise
    subject: z.string().optional().describe('Subject or description of the sprite (e.g. character, sword, tree)'),
    size: z.string().optional().describe('Canvas dimensions, default 32x32')
   }
- }, ({ subject, size }) => ({
+ }, (args) => { const { subject, size } = args ?? {}; return {
   messages: [{ role: 'user', content: { type: 'text', text: `Create ${subject ?? 'sprite'}, ${size ?? '32x32'} pixels. Read aseprite://guide. Use a limited palette and named layers. Batch coherent edits, preview the silhouette and final animation, validate timing, then save an .aseprite source, a PNG sheet with metadata, a GIF, and always export a .vyi file under new filenames. NEVER write python/mjs scripts or use the terminal CLI; draw purely using aseprite-mcp-pro.` } }]
- }));
+ }; });
 
  return server;
 }

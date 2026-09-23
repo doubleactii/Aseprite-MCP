@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, copyFile, cp, access, stat, chmod, lstat, realpath } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, copyFile, cp, access, stat, chmod, lstat, realpath, rm } from 'node:fs/promises';
 import { homedir, platform } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
@@ -30,6 +30,7 @@ export async function install(options:{workspace:string;configPath:string;extens
  // Never replace another extension or a symlink. Existing connection secrets stay stable on repair.
  if(await exists(options.extensionDir)){const manifest=JSON.parse(await readFile(join(options.extensionDir,'package.json'),'utf8'));if(manifest.name!=='aseprite-mcp-pro')throw new Error('Destination belongs to another extension.');}
  await safeDir(options.extensionDir);
+ for(const obs of ['clusters.lua']){const p=join(options.extensionDir,obs);if(await exists(p)&&!(await lstat(p)).isSymbolicLink())await rm(p,{force:true});}
  for(const name of ['__info.json','package.json','main.lua','commands.lua','runtime.lua','crypto.lua','vyi.lua','palettes.json','catalog.json']){const source=join(project,'extension',name);const dest=join(options.extensionDir,name);if(await exists(dest)&&(await lstat(dest)).isSymbolicLink())throw new Error('Refusing symlink extension file.');await copyFile(source,dest);const [expected,installed]=await Promise.all([readFile(source),readFile(dest)]);if(!expected.equals(installed))throw new Error(`Extension install verification failed for ${name}.`);}
  await backup(options.configPath);await writeFile(options.configPath,JSON.stringify(config,null,2)+'\n',{mode:0o600});await chmod(options.configPath,0o600);
  const connection=join(options.extensionDir,'connection.json');if(await exists(connection) && (await lstat(connection)).isSymbolicLink())throw new Error('Refusing a symlink connection file.');await writeFile(connection,JSON.stringify(config)+'\n',{mode:0o600});await chmod(connection,0o600);

@@ -71,6 +71,7 @@ local function decodeRLE(str,w,h,paletteMap)
 end
 H['sprite.build_animation']=function(a)
  check(a.width*a.height<=1048576,'Canvas too large.');
+ spend(a.width*a.height*#a.frames) -- budget: one pass per frame for drawing
  local s=Sprite(a.width,a.height,ColorMode.RGB)
  M.target=s
  if a.name then s.filename=a.name end
@@ -227,7 +228,6 @@ H['export.gif']=function(a) sprite():saveCopyAs(a.path) end
 H['animation.preview']=H['export.gif']
 H['export.layer']=function(a) local s,l,f,im=canvas(a);im:saveAs(a.path) end
 H['export.tag']=function(a) local s=sprite();local t=tag(s,a.name);local copy=Sprite(s);local ok,err=pcall(function() for i=#copy.frames,t.toFrame.frameNumber+1,-1 do copy:deleteFrame(i) end;for i=t.fromFrame.frameNumber-1,1,-1 do copy:deleteFrame(i) end;copy:saveCopyAs(a.path) end);copy:close();app.sprite=s;check(ok,err) end
-local function write(path,text) local f=check(io.open(path,'wb'),'Could not write file.');f:write(text);f:close() end
 H['export.metadata']=function(a) write(a.path,json.encode(meta(sprite()))) end
 local function compare(s,from,to) local a,b=rendered(s,from),rendered(s,to);local count=0;local minx,miny,maxx,maxy=s.width,s.height,-1,-1;local diff=Image(s.width,s.height,ColorMode.RGB);for y=0,s.height-1 do for x=0,s.width-1 do if a:getPixel(x,y)~=b:getPixel(x,y) then count=count+1;minx=math.min(minx,x);miny=math.min(miny,y);maxx=math.max(maxx,x);maxy=math.max(maxy,y);diff:drawPixel(x,y,rgba('#ff4d8d')) end end end;return {changed=count,bounds=count>0 and {x=minx,y=miny,width=maxx-minx+1,height=maxy-miny+1} or nil},diff end
 H['analysis.compare']=function(a) local result=compare(sprite(),a.from,a.to);return result end
@@ -235,7 +235,8 @@ H['analysis.diff']=function(a) local result,im=compare(sprite(),a.from,a.to);im:
 H['analysis.colors']=function(a) local im=rendered(sprite(),a.frame);local counts={};for p in im:pixels() do local v=p();counts[v]=(counts[v] or 0)+1 end;local out={};for p,n in pairs(counts) do out[#out+1]={color=hex(p),count=n} end;table.sort(out,function(p,q) return p.count>q.count or (p.count==q.count and p.color<q.color) end);while #out>a.limit do table.remove(out) end;return out end
 H['analysis.bounds']=function(a) local s=sprite();local im=rendered(s,a.frame);local x0,y0,x1,y1=s.width,s.height,-1,-1;for y=0,s.height-1 do for x=0,s.width-1 do if pc.rgbaA(im:getPixel(x,y))>0 then x0=math.min(x0,x);y0=math.min(y0,y);x1=math.max(x1,x);y1=math.max(y1,y) end end end;return {empty=x1<0,bounds=x1>=0 and {x=x0,y=y0,width=x1-x0+1,height=y1-y0+1} or nil} end
 H['analysis.pixel']=function(a) local s=sprite();check(a.x>=0 and a.y>=0 and a.x<s.width and a.y<s.height,'Pixel outside canvas.');return {color=hex(rendered(s,a.frame):getPixel(a.x,a.y))} end
-H['analysis.validate']=function() local s=sprite();local warnings={};local prev=nil;for i,f in ipairs(s.frames) do local im=rendered(s,i);if f.duration<0.02 then warnings[#warnings+1]='Frame '..i..' is shorter than 20ms.' end;if im:isEmpty() then warnings[#warnings+1]='Frame '..i..' is empty.' end;if prev and im.bytes==prev then warnings[#warnings+1]='Frame '..i..' duplicates its predecessor.' end;prev=im.bytes end;return {frames=#s.frames,warnings=warnings,valid=#warnings==0} end
+local function frameFingerprint(im,w,h) local step=math.max(1,math.floor(w*h/128));local t={};local i=0;for p in im:pixels() do if i%step==0 then t[#t+1]=tostring(p()) end;i=i+1 end;return table.concat(t,',') end
+H['analysis.validate']=function() local s=sprite();local warnings={};local prev=nil;for i,f in ipairs(s.frames) do local im=rendered(s,i);if f.duration<0.02 then warnings[#warnings+1]='Frame '..i..' is shorter than 20ms.' end;if im:isEmpty() then warnings[#warnings+1]='Frame '..i..' is empty.' end;local fp=frameFingerprint(im,s.width,s.height);if prev and fp==prev then warnings[#warnings+1]='Frame '..i..' duplicates its predecessor.' end;prev=fp end;return {frames=#s.frames,warnings=warnings,valid=#warnings==0} end
 for _,kind in ipairs({'flip','rotate','shift','scale'}) do H['transform.'..kind]=function(a) return edit(a,function(s,im)
  local src=Image(im);im:clear();for y=0,s.height-1 do for x=0,s.width-1 do local sx,sy=x,y
   if kind=='flip' then if a.axis=='x' then sx=s.width-1-x else sy=s.height-1-y end

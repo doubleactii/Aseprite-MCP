@@ -1,5 +1,5 @@
 import { realpathSync } from 'node:fs';
-import { realpath, stat, lstat, mkdtemp, mkdir, link, rm, readFile } from 'node:fs/promises';
+import { realpath, stat, lstat, mkdtemp, mkdir, link, rm } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, extname, dirname, join, basename } from 'node:path';
 export class FilePolicy {
  readonly root:string;
@@ -25,5 +25,4 @@ export class FilePolicy {
    await link(staged,dest);return {path,bytes:s.size};
   }};
  }
- async preview(path:string){const abs=await this.input(path,['.png']);const b=await readFile(abs);if(b.length>2*1024*1024)throw new Error('Preview too large (2 MiB maximum).');return b.toString('base64');}
 }

@@ -6,7 +6,7 @@ import {createHmac,randomBytes} from 'node:crypto';
 import {WebSocket} from 'ws';
 import {Bridge} from '../build/bridge.js';
 async function freePort(){const s=createServer();s.listen(0,'127.0.0.1');await once(s,'listening');const port=s.address().port;await new Promise(r=>s.close(r));return port;}
-async function fixture(timeout=1000){const config={port:await freePort(),token:randomBytes(32).toString('hex')};const bridge=new Bridge(config,timeout);await bridge.listen();return {config,bridge};}
+async function fixture(){const config={port:await freePort(),token:randomBytes(32).toString('hex')};const bridge=new Bridge(config);await bridge.listen();return {config,bridge};}
 async function peer(config,token=config.token){const ws=new WebSocket(`ws://127.0.0.1:${config.port}/aseprite`);ws.on('error',()=>{});const [raw]=await once(ws,'message');const challenge=JSON.parse(raw.toString());assert.equal(challenge.proof,createHmac('sha256',config.token).update('server:'+challenge.nonce).digest('hex'));ws.send(JSON.stringify({type:'hello',proof:createHmac('sha256',token).update('client:'+challenge.nonce).digest('hex')}));return ws;}
 test('mutual auth, request correlation, serial execution and reconnect',async()=>{
  const {config,bridge}=await fixture();try{
@@ -23,5 +23,5 @@ test('native origins are authenticated instead of rejected',async()=>{
  const {config,bridge}=await fixture();try{const ws=new WebSocket(`ws://127.0.0.1:${config.port}/aseprite`,{origin:'app://aseprite'});const [raw]=await once(ws,'message');const challenge=JSON.parse(raw.toString());ws.send(JSON.stringify({type:'hello',proof:createHmac('sha256',config.token).update('client:'+challenge.nonce).digest('hex')}));await once(ws,'message');assert.equal(bridge.status().connected,true);ws.terminate();}finally{await bridge.close();}
 });
 test('timeout is never replayed and requires explicit reconnect',async()=>{
- const {config,bridge}=await fixture(30);try{const ws=await peer(config);await once(ws,'message');let requests=0;ws.on('message',()=>requests++);await assert.rejects(bridge.request({}),/NOT retried/);assert.equal(requests,1);await assert.rejects(bridge.request({}),/timed out/);assert.equal(bridge.status().needsReconnect,true);ws.terminate();}finally{await bridge.close();}
+ const {config,bridge}=await fixture();try{const ws=await peer(config);await once(ws,'message');let requests=0;ws.on('message',()=>requests++);await assert.rejects(bridge.request({},30),/NOT retried/);assert.equal(requests,1);await assert.rejects(bridge.request({}),/timed out/);assert.equal(bridge.status().needsReconnect,true);ws.terminate();}finally{await bridge.close();}
 });
