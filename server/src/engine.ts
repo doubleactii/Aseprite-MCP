@@ -16,7 +16,7 @@ export class Engine {
   if(name==='vyi.inspect')return inspectVyi(decodeVyi(await readFile(args.path as string,'utf8')));
   if(name==='vyi.import'){
    const data=decodeVyi(await readFile(args.path as string,'utf8'));const stage=await this.files.stage(`import-${randomUUID()}.json`,['.json']);
-   try{const manifest=await prepareImport(data,args.icon as number,dirname(stage.staged));await writeFile(stage.staged,JSON.stringify(manifest));return await this.bridge.request({commands:[{name,args:{path:stage.staged,icon:args.icon}}],atomic:false});}finally{await stage.cleanup();}
+   try{const manifest=await prepareImport(data,args.icon as number,dirname(stage.staged));await writeFile(stage.staged,JSON.stringify(manifest));return await this.bridge.request({commands:[{name,args:{path:stage.staged,icon:args.icon}}],atomic:false},c.timeout);}finally{await stage.cleanup();}
   }
   if(name==='sprite.build_animation'){
    const requestedExports=Array.isArray(args.exports)&&args.exports.length>0?args.exports:['aseprite','sheet','gif','vyi'];
@@ -41,7 +41,7 @@ export class Engine {
    }
    args.exportPaths=stagedArgs;
    try{
-    const result=await this.bridge.request({commands:[{name,args}],atomic:false});
+    const result=await this.bridge.request({commands:[{name,args}],atomic:false},c.timeout);
     if(stagedMap.vyi&&result&&result.vyiManifest){
      await writeFile(stagedMap.vyi.staged,await encodeManifest(result.vyiManifest,dirname(stagedMap.vyi.staged)));
     }
@@ -57,9 +57,9 @@ export class Engine {
    }
   }
   if(c.output){const stage=await this.files.stage(args[c.output] as string,c.extensions!);args[c.output]=stage.staged;
-   try{const result=await this.bridge.request({commands:[{name,args}],atomic:false});if(name==='vyi.export')await writeFile(stage.staged,await encodeManifest(result,dirname(stage.staged)));return await stage.commit();}finally{await stage.cleanup();}
+   try{const result=await this.bridge.request({commands:[{name,args}],atomic:false},c.timeout);if(name==='vyi.export')await writeFile(stage.staged,await encodeManifest(result,dirname(stage.staged)));return await stage.commit();}finally{await stage.cleanup();}
   }
-  return this.bridge.request({commands:[{name,args}],atomic:false});
+  return this.bridge.request({commands:[{name,args}],atomic:false},c.timeout);
  }
  async batch(commands:{name:string;args?:unknown}[],dryRun=false){
   if(commands.length<1||commands.length>64)throw new Error('A batch needs 1–64 commands.');

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-export type Command = {name:string; description:string; schema:z.ZodObject; effect:'read'|'edit'|'file'|'unsafe'; batch:boolean; input?:string; output?:string; extensions?:string[]};
+import { TIMEOUT_READ, TIMEOUT_EDIT, TIMEOUT_EXPORT, TIMEOUT_HEAVY, TIMEOUT_DEFAULT } from './bridge.js';
+export type Command = {name:string; description:string; schema:z.ZodObject; effect:'read'|'edit'|'file'|'unsafe'; batch:boolean; input?:string; output?:string; extensions?:string[]; timeout:number};
 export const catalog: Command[] = [];
 const n = (min:number,max:number) => z.number().int().min(min).max(max);
 const size=n(1,1024), coord=n(-2048,2048), frame=n(1,256), name=z.string().min(1).max(80), color=z.string().regex(/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/), path=z.string().min(1).max(512);
@@ -8,9 +9,9 @@ const rect={x:coord,y:coord,width:size,height:size};
 const target={layer:name.optional(),frame:frame.optional()};
 const region={...rect,...target};
 const paint={color,...target};
-const add=(category:string, action:string, description:string, fields:Record<string,z.ZodType>={}, options:Partial<Omit<Command,'name'|'description'|'schema'>>={})=>catalog.push({name:`${category}.${action}`,description,schema:z.object(fields).strict(),effect:'edit',batch:true,...options});
-const read={effect:'read' as const}; const solo={batch:false};
-const output=(extensions:string[])=>({effect:'file' as const,batch:false,output:'path',extensions});
+const add=(category:string, action:string, description:string, fields:Record<string,z.ZodType>={}, options:Partial<Omit<Command,'name'|'description'|'schema'>>={})=>catalog.push({name:`${category}.${action}`,description,schema:z.object(fields).strict(),effect:'edit',batch:true,timeout:TIMEOUT_EDIT,...options});
+const read={effect:'read' as const,timeout:TIMEOUT_READ}; const solo={batch:false};
+const output=(extensions:string[],timeout=TIMEOUT_EXPORT)=>({effect:'file' as const,batch:false,output:'path',extensions,timeout});
 const input=(extensions:string[])=>({batch:false,input:'path',extensions});
 const imageExt=['.png','.aseprite','.ase','.gif'];
 add('sprite','create','Create an RGB sprite; becomes the current AI target.',{width:size,height:size,name:name.optional()},solo);
@@ -44,7 +45,7 @@ add('sprite','build_animation','Create, draw, animate and export a multi-frame s
  exports:z.array(z.enum(['aseprite','sheet','metadata','gif','vyi'])).max(5).default(['aseprite','sheet','gif','vyi']),
  sheetColumns:n(1,64).default(8),
  exportPaths:z.record(z.string(),path).optional()
-},solo);
+},{...solo,timeout:TIMEOUT_HEAVY});
 add('drawing','pixel','Set one pixel.',{x:coord,y:coord,...paint});
 add('drawing','pixels','Draw many pixels in one operation.',{pixels:z.array(z.object({x:coord,y:coord,color}).strict()).min(1).max(16384),...target});
 add('drawing','line','Draw a crisp integer line.',{x:coord,y:coord,x2:coord,y2:coord,...paint});
@@ -84,7 +85,7 @@ add('animation','tag','Create a named animation range.',{name,from:frame,to:fram
 add('animation','delete_tag','Delete an animation tag.',{name});
 add('animation','rename_tag','Rename an animation tag.',{name,newName:name});
 add('animation','interpolate','Append translated copies of a frame, interpolating a cel offset (not AI inbetweening).',{frame,layer:name,dx:coord,dy:coord,count:n(1,32)});
-add('animation','preview','Export an animated GIF preview to a new file.',{path},output(['.gif']));
+add('animation','preview','Export an animated GIF preview to a new file.',{path},output(['.gif'],TIMEOUT_EXPORT));
 add('palette','list','List bundled palette names and attribution.',{},read);
 add('palette','get','Read the target palette as hex colors.',{},read);
 add('palette','set','Replace the palette with explicit colors.',{colors:z.array(color).min(1).max(256)});
@@ -93,7 +94,7 @@ add('palette','color','Change a zero-based palette entry.',{index:n(0,255),color
 add('palette','ramp','Replace palette with a linear RGB color ramp.',{from:color,to:color,steps:n(2,64)});
 add('palette','sort','Sort palette by luminance. RGB artwork is unchanged.',{order:z.enum(['ascending','descending']).default('ascending')});
 add('palette','import_image','Extract up to 256 exact colors from an image.',{path},input(['.png']));
-add('palette','export','Export the palette as a PNG swatch strip.',{path},output(['.png']));
+add('palette','export','Export the palette as a PNG swatch strip.',{path},output(['.png'],TIMEOUT_EXPORT));
 add('palette','nearest','Find the nearest palette color by RGB distance.',{color},read);
 add('selection','rectangle','Replace selection with a rectangle.',rect);
 add('selection','ellipse','Replace selection with an ellipse.',rect);
@@ -103,14 +104,14 @@ add('selection','all','Select the whole canvas.',{});
 add('selection','clear','Deselect.',{});
 add('selection','bounds','Get selection bounds and whether empty.',{},read);
 add('selection','translate','Move selection without moving pixels.',{dx:coord,dy:coord});
-add('export','png','Export one composited frame as PNG.',{path,frame:frame.optional()},output(['.png']));
-add('export','sheet','Export frames in a regular PNG grid.',{path,columns:n(1,64).default(8)},output(['.png']));
-add('export','gif','Export the complete animation as GIF.',{path},output(['.gif']));
-add('export','layer','Export one isolated image layer/frame as PNG.',{path,layer:name,frame:frame.optional()},output(['.png']));
-add('export','tag','Export a named animation as GIF.',{path,name},output(['.gif']));
-add('export','metadata','Export frame durations, layers and tags as JSON.',{path},output(['.json']));
-add('vyi','export','Export Vylocity v1 icons, embedded PNG frames and named states. Separate icons per selected layer or merge them.',{path,layers:z.array(name).min(1).max(32),merge:z.boolean().default(false),name:name.optional()},output(['.vyi']));
-add('vyi','inspect','Inspect a VYI file without returning embedded images.',{path},{...input(['.vyi']),effect:'read'});
+add('export','png','Export one composited frame as PNG.',{path,frame:frame.optional()},output(['.png'],TIMEOUT_EXPORT));
+add('export','sheet','Export frames in a regular PNG grid.',{path,columns:n(1,64).default(8)},output(['.png'],TIMEOUT_EXPORT));
+add('export','gif','Export the complete animation as GIF.',{path},output(['.gif'],TIMEOUT_EXPORT));
+add('export','layer','Export one isolated image layer/frame as PNG.',{path,layer:name,frame:frame.optional()},output(['.png'],TIMEOUT_EXPORT));
+add('export','tag','Export a named animation as GIF.',{path,name},output(['.gif'],TIMEOUT_EXPORT));
+add('export','metadata','Export frame durations, layers and tags as JSON.',{path},output(['.json'],TIMEOUT_EXPORT));
+add('vyi','export','Export Vylocity v1 icons, embedded PNG frames and named states. Separate icons per selected layer or merge them.',{path,layers:z.array(name).min(1).max(32),merge:z.boolean().default(false),name:name.optional()},{...output(['.vyi'],TIMEOUT_HEAVY)});
+add('vyi','inspect','Inspect a VYI file without returning embedded images.',{path},{...input(['.vyi']),effect:'read',timeout:TIMEOUT_READ});
 add('vyi','import','Import one VYI icon into a new sprite. State timelines are concatenated with tags.',{path,icon:n(0,127).default(0)},input(['.vyi']));
 add('vyi','skip','Set the ase2vyi-compatible skip marker on a cel; preserve unrelated user data.',{...target,skip:z.boolean().default(true)});
 add('vyi','preview','Mark a cel as its layer’s VYI preview. It can also be skipped from animation.',{...target});
