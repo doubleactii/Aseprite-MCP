@@ -19,6 +19,25 @@ Use this guide with Aseprite MCP Pro. The assistant supplies the artistic reason
 9. To dress an existing animation, keep the base character on its own locked layer. Call `animation.overlay` with `sourceLayer` set to the aligned base layer and a new `targetLayer` such as `Shirt`; this copies every source cel at the same frame and canvas position. Draw only the garment on the new layer, then preview several poses. Do not redraw or move the base layer. For a longer sequence, call `animation.extend` first, then edit the copied poses while preserving feet, head anchor, and frame timing.
 10. Validate frame timing and duplicates. Review an exported GIF for motion. Save a NEW `.aseprite` source copy; export a PNG sheet, metadata, and GIF. Files use paths relative to the artwork folder, cannot overwrite, and must have an allowed extension. Parent folders must already exist. NEVER write external python (.py), node (.mjs/.js), or shell scripts, and NEVER use the terminal CLI to generate pixel art; ALWAYS use `aseprite-mcp-pro` tools directly.
 11. **ALWAYS export `.vyi` by default**: Every sprite and animation MUST export a `.vyi` file using `vyi.export` (with `merge: true` if combining layers, or separate icons per layer) or via `sprite.build_animation`. Tags become named states. Timings remain in milliseconds. Use `vyi.skip` to exclude a cel/frame and `vyi.preview` for the icon thumbnail. These preserve ase2vyi's `_es_skipped_frame` and `_es_main_image` markers. With no tags, frames after frame 1 are the base animation. With tags, untagged runs become cel1, cel2, etc. VYI exports preserve chronological tag order to match ase2vyi.
+12. **Infinite Silk-Smooth Zero-Pop Looping System (Default for ALL Looping Animations)**:
+    Every looping animation (summoning circles, magic auras, idle bobbing, floating motes, elemental pillars, flame pulses, rotating rings, shield charges) MUST enforce mathematical continuity so the transition from final frame N back to frame 1 has zero jump, zero hitch, and zero pop:
+    - **Closed Parametric Orbits (Zero-Pop Motes & Debris)**:
+      Particles, orbiting glyphs, and motes must follow closed circular/elliptical parametric paths across N frames:
+      `x(f) = cx + rx * cos(theta0 + 2*pi*(f-1)/N)`, `y(f) = cy + ry * sin(theta0 + 2*pi*(f-1)/N)`.
+      Because angular increment is uniform, the transition from frame N -> 1 has the exact same angular step `2*pi/N` as every other frame.
+    - **Sinusoidal Opacity Envelopes for Linear Particles**:
+      For linear drift particles (rising sparks, embers, falling dust), normalize life to `t in [0, 1)`. Modulate alpha with a smooth sine window `alpha(t) = sin(pi * t)`. The mote is born at alpha=0, reaches peak brightness at mid-life, and fades completely to alpha=0 before recycling to its starting coordinate. Never allow a visible particle to jump or vanish abruptly.
+    - **Harmonic Cosine Luminosity (Zero-Pop Pulses & Glyphs)**:
+      Luminance, alpha, or color pulsing across N frames must be driven by a harmonic cosine envelope:
+      `L(f) = (1 - cos(2*pi*(f-1)/N)) / 2` in `[0, 1]`.
+      This guarantees zero derivative at both ends: frame 1 starts at minimum, frame (N/2)+1 reaches maximum, and frame N smoothly decays back to connect with frame 1 with unbroken visual continuity.
+    - **Rotational Symmetry Discretization**:
+      For rotating segmented rings, circular dials, runes, or energy brackets with K-fold rotational symmetry (e.g., 4 brackets = 90 deg, 8 runes = 45 deg), rotate by exactly ONE symmetry interval across N frames: `deltaTheta = 360 / K`.
+      Per-frame angle for bracket `k in {0, ..., K-1}`:
+      `theta_k(f) = k * (360 / K) + (f - 1) * (360 / (K * N))`.
+      At frame N+1 (looping back to frame 1), bracket k seamlessly takes the exact position of bracket k+1, creating an illusion of infinite, continuous rotation.
+    - **Ground Contact Plane Anchoring**:
+      For vertical pillars, auras, light columns, and contact ground halos, the bottom contact base MUST be anchored to the ground plane center (cx, cy). Never allow columns or ground shadows to oscillate out of sync with the floor ellipse plane.
 
 Read `sprite.info` after a disconnect or unexpected result. Do not retry a timed-out edit automatically: it may have completed. Reconnect locally after inspection. Undo applies to the pinned sprite's latest history entry, including user edits; inspect state before undoing.
 

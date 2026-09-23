@@ -13,11 +13,11 @@ export const TIMEOUT_EXPORT = 60_000;   // single-file export
 export const TIMEOUT_HEAVY  = 120_000;  // vyi.export, sprite.build_animation
 export const TIMEOUT_DEFAULT = 20_000;
 
-// Heartbeat: ping every N ms, close zombie connection if pong not received within PONG_WAIT ms.
-// Also send an application-level TEXT heartbeat that Lua can observe for UI freshness tracking.
-const PING_INTERVAL      = 15_000;
-const PONG_WAIT          = 10_000;
-const HEARTBEAT_INTERVAL = 30_000; // TEXT heartbeat visible to Lua
+// Heartbeat: send an application-level JSON heartbeat every HEARTBEAT_INTERVAL ms.
+// Aseprite Lua acknowledges with {type:'heartbeat_ack'}, safe from low-level C++ WS binary ping crashes.
+// If no ack is received within HEARTBEAT_TIMEOUT ms, the zombie connection is terminated.
+const HEARTBEAT_INTERVAL = 15_000;
+const HEARTBEAT_TIMEOUT  = 12_000;
 
 export class Bridge {
  private http: Server;
@@ -28,9 +28,8 @@ export class Bridge {
  private lastConnectionError?: string;
  private pending?: { id: string; resolve: (v: any) => void; reject: (e: Error) => void; timer: NodeJS.Timeout };
  private clientInfo?: { name: string; version: string };
- private pingInterval?: NodeJS.Timeout;
- private pongTimer?: NodeJS.Timeout;
- private textHeartbeatInterval?: NodeJS.Timeout;
+ private heartbeatInterval?: NodeJS.Timeout;
+ private heartbeatAckTimer?: NodeJS.Timeout;
 
  constructor(private config: Config) {
   this.http = createServer((_q, r) => { r.writeHead(404); r.end(); });
@@ -44,7 +43,18 @@ export class Bridge {
     socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
     return;
    }
-   if (this.wss.clients.size >= 2) { socket.destroy(); return; }
+   // Prune any closed or closing sockets before checking limits
+   for (const client of this.wss.clients) {
+    if (client.readyState === WebSocket.CLOSING || client.readyState === WebSocket.CLOSED) {
+     try { client.terminate(); } catch { /* ignore */ }
+    }
+   }
+   if (this.wss.clients.size >= 4) {
+    // Terminate non-peer sockets to ensure new connection attempts can reach handshake
+    for (const client of this.wss.clients) {
+     if (client !== this.peer) try { client.terminate(); } catch { /* ignore */ }
+    }
+   }
    this.wss.handleUpgrade(req, socket, head, ws => this.accept(ws));
   });
  }
@@ -82,35 +92,23 @@ export class Bridge {
 
  private startHeartbeat(ws: WebSocket) {
   this.stopHeartbeat();
-  // 1. WS protocol-level ping — detects TCP zombie connections.
-  this.pingInterval = setInterval(() => {
+  // Safe application-level JSON heartbeat. Never send opcode 0x9 binary pings to Aseprite's WS client.
+  this.heartbeatInterval = setInterval(() => {
    if (!this.peer || this.peer.readyState !== WebSocket.OPEN) return;
-   this.pongTimer = setTimeout(() => {
-    process.stderr.write('[aseprite-mcp] Pong timeout — zombie connection detected, forcing close for auto-reconnect\n');
+   this.heartbeatAckTimer = setTimeout(() => {
+    process.stderr.write('[aseprite-mcp] Heartbeat ack timeout — zombie connection detected, terminating.\n');
     this.peer?.terminate();
-   }, PONG_WAIT);
-   this.peer.ping();
-  }, PING_INTERVAL);
-  this.pingInterval.unref();
-  ws.on('pong', () => { clearTimeout(this.pongTimer); });
-
-  // 2. Application-level TEXT heartbeat — visible to Lua for UI freshness tracking.
-  // Lua responds with {type:'heartbeat_ack'} so both sides know the other is alive.
-  this.textHeartbeatInterval = setInterval(() => {
-   if (this.peer?.readyState === WebSocket.OPEN) {
-    this.peer.send(JSON.stringify({ type: 'heartbeat', ts: Date.now() }));
-   }
+   }, HEARTBEAT_TIMEOUT);
+   this.peer.send(JSON.stringify({ type: 'heartbeat', ts: Date.now() }));
   }, HEARTBEAT_INTERVAL);
-  this.textHeartbeatInterval.unref();
+  this.heartbeatInterval.unref();
  }
 
  private stopHeartbeat() {
-  clearInterval(this.pingInterval);
-  clearTimeout(this.pongTimer);
-  clearInterval(this.textHeartbeatInterval);
-  this.pingInterval = undefined;
-  this.pongTimer = undefined;
-  this.textHeartbeatInterval = undefined;
+  clearInterval(this.heartbeatInterval);
+  clearTimeout(this.heartbeatAckTimer);
+  this.heartbeatInterval = undefined;
+  this.heartbeatAckTimer = undefined;
  }
 
  private accept(ws: WebSocket) {
@@ -132,7 +130,13 @@ export class Bridge {
      ws.close(1008, 'Authentication failed');
      return;
     }
-    if (this.peer) { ws.close(1008, 'One editor is already connected'); return; }
+    // Reconnection resilience: if an existing peer is still registered (e.g. Aseprite crashed without closing TCP socket),
+    // displace and terminate the old peer so the newly launched Aseprite connects immediately.
+    if (this.peer && this.peer !== ws) {
+     process.stderr.write('[aseprite-mcp] Authenticated connection from Aseprite displacing previous connection.\n');
+     try { this.peer.terminate(); } catch { /* ignore */ }
+     this.peer = undefined;
+    }
     authenticated = true;
     clearTimeout(authTimer);
     this.peer = ws;
@@ -149,7 +153,9 @@ export class Bridge {
     if (m.ok === true) p.resolve(m.result);
     else p.reject(new Error(typeof m.error === 'string' ? m.error.slice(0, 1024) : 'Editor command failed'));
    } else if (m.type === 'heartbeat_ack') {
-    // Lua acknowledged our TEXT heartbeat — it is alive and responsive. No action needed.
+    // Lua acknowledged our JSON heartbeat — it is alive and responsive. Clear the ack timer.
+    clearTimeout(this.heartbeatAckTimer);
+    this.heartbeatAckTimer = undefined;
    }
   });
   ws.on('close', () => {

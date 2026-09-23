@@ -67,13 +67,9 @@ connect=function()
     connected=true
     lastHeartbeatAt=os.clock() -- treat ready as first heartbeat
     local who=(clientInfo and ((clientInfo.name or 'AI host')..(clientInfo.version and (' '..clientInfo.version) or '')) or 'Connected AI Client')
-    -- Non-blocking status log (no modal)
-    if app.isUIAvailable then
-     -- Attempt to show a transient status bar message if the API is available
-     pcall(function()
-      if app.statusBar then app.statusBar:showMessage('AI Connected — '..who,3000)
-      else app.alert{title='AI Connection',text='Connected: '..who} end
-     end)
+    -- Non-blocking status notification (never open a modal app.alert inside an async socket callback)
+    if app.isUIAvailable and app.statusBar then
+     pcall(function() app.statusBar:showMessage('AI Connected — '..who, 3000) end)
     end
    elseif m.type=='heartbeat' and connected then
     -- Application-level liveness signal from the bridge — update freshness timestamp.

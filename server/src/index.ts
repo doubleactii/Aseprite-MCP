@@ -18,7 +18,7 @@ async function buildServer(config: ReturnType<typeof loadConfig> extends Promise
 
  const server = new McpServer(
   { name: 'aseprite-mcp-pro', version: '0.1.0' },
-  { instructions: 'Local Aseprite bridge. Discover only needed commands, then batch related edits. Explicitly create/select a target before editing. Read aseprite://guide first. Frame numbers start at 1. Colors use #RRGGBB[AA]. Export paths are relative to the user artwork folder. ALWAYS export a .vyi file by default (using vyi.export with merge:true, or sprite.build_animation) alongside .aseprite, .gif, and spritesheet PNG. NEVER write external python or mjs scripts, and NEVER use the terminal CLI to generate pixel art; ALWAYS use aseprite-mcp-pro tools directly. Never retry an uncertain timeout blindly.' }
+  { instructions: 'Local Aseprite bridge. Discover only needed commands, then batch related edits. Explicitly create/select a target before editing. Read aseprite://guide first. Frame numbers start at 1. Colors use #RRGGBB[AA]. Export paths are relative to the user artwork folder. ALWAYS export a .vyi file by default (using vyi.export with merge:true, or sprite.build_animation) alongside .aseprite, .gif, and spritesheet PNG. NEVER write external python or mjs scripts, and NEVER use the terminal CLI to generate pixel art; ALWAYS use aseprite-mcp-pro tools directly. For ANY looping animation, ALWAYS enforce the Infinite Silk-Smooth Zero-Pop Looping System by default: (1) Closed parametric orbits θ(f)=θ0+2π(f-1)/N for motes/orbs so frame N steps into frame 1 with zero pop; (2) Sinusoidal opacity envelopes sin(π·t) for linear drift particles so they fade completely to 0 before recycling; (3) Harmonic cosine luminosity L(f)=(1-cos(2π(f-1)/N))/2 for pulsing glows/runes; (4) Rotational symmetry discretization 360°/(K·N) per frame for K-fold symmetrical rings/brackets; (5) Ground contact plane anchoring for columns, auras and floor ellipses. Never retry an uncertain timeout blindly.' }
  );
 
  server.registerTool('aseprite_status', {
@@ -112,7 +112,7 @@ async function buildServer(config: ReturnType<typeof loadConfig> extends Promise
    size: z.string().optional().describe('Canvas dimensions, default 32x32')
   }
  }, (args) => { const { subject, size } = args ?? {}; return {
-  messages: [{ role: 'user', content: { type: 'text', text: `Create ${subject ?? 'sprite'}, ${size ?? '32x32'} pixels. Read aseprite://guide. Use a limited palette and named layers. Batch coherent edits, preview the silhouette and final animation, validate timing, then save an .aseprite source, a PNG sheet with metadata, a GIF, and always export a .vyi file under new filenames. NEVER write python/mjs scripts or use the terminal CLI; draw purely using aseprite-mcp-pro.` } }]
+  messages: [{ role: 'user', content: { type: 'text', text: `Create ${subject ?? 'sprite'}, ${size ?? '32x32'} pixels. Read aseprite://guide. Use a limited palette and named layers. Batch coherent edits, preview the silhouette and final animation, validate timing, ensure looping animations follow the zero-pop continuity system (closed harmonic cosine pulses, closed-orbit motes, and symmetry-matched rotational intervals), then save an .aseprite source, a PNG sheet with metadata, a GIF, and always export a .vyi file under new filenames. NEVER write python/mjs scripts or use the terminal CLI; draw purely using aseprite-mcp-pro.` } }]
  }; });
 
  return server;

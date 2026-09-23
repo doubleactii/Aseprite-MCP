@@ -24,7 +24,7 @@ add('sprite','resize','Resize all cels using nearest-neighbor sampling.',{width:
 add('sprite','crop','Crop the canvas.',rect);
 add('sprite','duplicate','Duplicate target into a new untitled sprite.',{},solo);
 add('sprite','close','Close only an unmodified sprite. Save your work in the editor first.',{},solo);
-add('sprite','build_animation','Create, draw, animate and export a multi-frame sprite in a single operation.',{
+add('sprite','build_animation','Create, draw, animate and export a multi-frame sprite in a single operation. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization).',{
  name:name.default('Animation'),
  width:size,
  height:size,
