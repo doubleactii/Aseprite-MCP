@@ -146,13 +146,25 @@ async function main() {
  process.stdin.once('close', () => void close());
  process.stdin.on('error',   () => void close());
 
- // Parent watchdog: exit if the host process is gone.
- // Use process.kill(ppid, 0) — more reliable than checking ppid===1
- // (which is unreliable on macOS/launchd).
+ // Prevent any unexpected async error from terminating the stdio MCP bridge.
+ process.on('uncaughtException', (err) => {
+  process.stderr.write(`[aseprite-mcp] Uncaught exception: ${err?.stack || err}\n`);
+ });
+ process.on('unhandledRejection', (reason) => {
+  process.stderr.write(`[aseprite-mcp] Unhandled rejection: ${reason}\n`);
+ });
+
+ // Parent watchdog: exit if the host process is confirmed gone (ESRCH).
+ // Ignore ppid <= 1 (launchd / init) and EPERM (parent process exists, permission restricted on macOS).
  const parentWatchdog = setInterval(() => {
-  try { process.kill(process.ppid, 0); } catch {
-   clearInterval(parentWatchdog);
-   void close();
+  if (process.ppid <= 1) return;
+  try {
+   process.kill(process.ppid, 0);
+  } catch (e: any) {
+   if (e?.code === 'ESRCH') {
+    clearInterval(parentWatchdog);
+    void close();
+   }
   }
  }, 5000);
  parentWatchdog.unref();

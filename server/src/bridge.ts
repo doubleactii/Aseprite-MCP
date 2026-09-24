@@ -33,7 +33,13 @@ export class Bridge {
 
  constructor(private config: Config) {
   this.http = createServer((_q, r) => { r.writeHead(404); r.end(); });
+  this.http.on('error', (err) => {
+   process.stderr.write(`[aseprite-mcp] HTTP server error: ${err instanceof Error ? err.message : err}\n`);
+  });
   this.wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE, perMessageDeflate: false });
+  this.wss.on('error', (err) => {
+   process.stderr.write(`[aseprite-mcp] WebSocketServer error: ${err instanceof Error ? err.message : err}\n`);
+  });
   this.http.on('upgrade', (req, socket, head) => {
    // Authentication below is the trust boundary. Aseprite builds may send an
    // Origin header even though they are native clients, so do not reject it.
@@ -130,12 +136,9 @@ export class Bridge {
      ws.close(1008, 'Authentication failed');
      return;
     }
-    // Reconnection resilience: if an existing peer is still registered (e.g. Aseprite crashed without closing TCP socket),
-    // displace and terminate the old peer so the newly launched Aseprite connects immediately.
-    if (this.peer && this.peer !== ws) {
-     process.stderr.write('[aseprite-mcp] Authenticated connection from Aseprite displacing previous connection.\n');
-     try { this.peer.terminate(); } catch { /* ignore */ }
-     this.peer = undefined;
+    if (this.peer && this.peer.readyState === WebSocket.OPEN) {
+     ws.close(1008, 'One editor is already connected');
+     return;
     }
     authenticated = true;
     clearTimeout(authTimer);
