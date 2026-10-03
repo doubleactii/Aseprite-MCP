@@ -212,7 +212,7 @@
   },
   {
     "name": "sprite.build_animation",
-    "description": "Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization).",
+    "description": "Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. For animation, prioritize readable key poses, stable anchors, and natural timing; mathematical cycles are optional when they suit the design.",
     "effect": "edit",
     "batch": false,
     "parameters": {
@@ -805,7 +805,7 @@
   },
   {
     "name": "drawing.stroke",
-    "description": "Draw connected points with a square brush.",
+    "description": "Draw connected points with a strict 1×1 pixel brush. Brush sizes larger than one pixel are not allowed.",
     "effect": "edit",
     "batch": true,
     "parameters": {
@@ -841,7 +841,7 @@
           "default": 1,
           "type": "integer",
           "minimum": 1,
-          "maximum": 32
+          "maximum": 1
         },
         "color": {
           "type": "string",

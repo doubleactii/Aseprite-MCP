@@ -24,7 +24,7 @@ add('sprite','resize','Resize all cels using nearest-neighbor sampling.',{width:
 add('sprite','crop','Crop the canvas.',rect);
 add('sprite','duplicate','Duplicate target into a new untitled sprite.',{},solo);
 add('sprite','close','Close only an unmodified sprite. Save your work in the editor first.',{},solo);
-add('sprite','build_animation','Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization).',{
+add('sprite','build_animation','Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. For animation, prioritize readable key poses, stable anchors, and natural timing; mathematical cycles are optional when they suit the design.',{
  name:name.default('Animation'),
  outputFolder:path.optional().describe('Relative folder for all generated files. Defaults to generated/<sprite-name>; a numbered folder is chosen when that folder already exists.'),
  width:size,
@@ -55,7 +55,7 @@ add('drawing','filled_rectangle','Draw a solid rectangle.',{...rect,...paint});
 add('drawing','ellipse','Draw an ellipse outline.',{...rect,...paint});
 add('drawing','filled_ellipse','Draw a solid ellipse.',{...rect,...paint});
 add('drawing','fill','Flood fill contiguous pixels in the target cel.',{x:coord,y:coord,...paint});
-add('drawing','stroke','Draw connected points with a square brush.',{points:z.array(point).min(1).max(1024),size:n(1,32).default(1),...paint});
+add('drawing','stroke','Draw connected points with a strict 1×1 pixel brush. Brush sizes larger than one pixel are not allowed.',{points:z.array(point).min(1).max(1024),size:n(1,1).default(1),...paint});
 add('drawing','polygon','Draw a closed polygon outline.',{points:z.array(point).min(3).max(256),...paint});
 add('drawing','clear','Clear selected pixels, or the entire cel if no selection.',target);
 add('drawing','dither','Fill a rectangle with a two-color Bayer pattern.',{...region,color,color2:color,density:n(0,16).default(8)});

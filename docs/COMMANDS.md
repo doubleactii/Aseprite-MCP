@@ -16,7 +16,7 @@
 | `sprite.crop` | Crop the canvas. | edit | yes |
 | `sprite.duplicate` | Duplicate target into a new untitled sprite. | edit | no |
 | `sprite.close` | Close only an unmodified sprite. Save your work in the editor first. | edit | no |
-| `sprite.build_animation` | Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization). | edit | no |
+| `sprite.build_animation` | Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. For animation, prioritize readable key poses, stable anchors, and natural timing; mathematical cycles are optional when they suit the design. | edit | no |
 
 ## drawing
 
@@ -30,7 +30,7 @@
 | `drawing.ellipse` | Draw an ellipse outline. | edit | yes |
 | `drawing.filled_ellipse` | Draw a solid ellipse. | edit | yes |
 | `drawing.fill` | Flood fill contiguous pixels in the target cel. | edit | yes |
-| `drawing.stroke` | Draw connected points with a square brush. | edit | yes |
+| `drawing.stroke` | Draw connected points with a strict 1×1 pixel brush. Brush sizes larger than one pixel are not allowed. | edit | yes |
 | `drawing.polygon` | Draw a closed polygon outline. | edit | yes |
 | `drawing.clear` | Clear selected pixels, or the entire cel if no selection. | edit | yes |
 | `drawing.dither` | Fill a rectangle with a two-color Bayer pattern. | edit | yes |

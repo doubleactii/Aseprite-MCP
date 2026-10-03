@@ -221,15 +221,16 @@ trace, sample pixels, or reproduce distinctive marks.
 
 ## 8. Quality and token efficiency
 
-Use a stronger multimodal model for the initial style contract and visual critique. A smaller model is usually excellent for deterministic tasks such as overlays, frame extension, cleanup, tagging, export, and validation when geometry and the style contract are explicit. Preview at milestones—after silhouette, after shading, and on the assembled sheet—instead of after every stroke. Generate eight to sixteen variants, critique them, then continue.
+Use a stronger multimodal model for the initial style contract and visual critique. A smaller model is usually excellent for deterministic tasks such as overlays, frame extension, cleanup, tagging, export, and validation when geometry and the style contract are explicit. Preview at native size after the silhouette, after shading, and before export—instead of after every stroke. At each milestone, identify and fix the biggest readability problem first. Generate variants only when they help compare meaningful design choices.
 
 Always request named layers, explicit anchors, native-size previews, adjacency checks, collision validation, and the export formats you need (`.aseprite`, PNG sheet, JSON metadata, GIF, or VYI).
 
 **Example prompt:**
 
 ```text
-Work in three milestones: silhouette, shading, and final sheet. Preview only
-at those milestones, batch related edits, and after each preview check palette,
+Work in three milestones: silhouette, shading, and final sheet. Preview at
+native size only at those milestones, batch related edits, and after each
+preview identify and fix the biggest readability problem first. Check palette,
 anchors, duplicate variants, and export readiness. Finish with an .aseprite
 source, PNG sheet, and JSON metadata.
 ```
@@ -241,7 +242,8 @@ Pixel art differs fundamentally from low-resolution raster graphics. Professiona
 ### The Core Principles
 
 1. **Cluster Theory (No Orphan Pixels or Modulo Grids)**
-   - High-grade pixel art is made of intentional shapes and clusters (minimum 2×2 or 3×2 contiguous pixels).
+   - Keep the brush footprint exactly **1×1 pixel**. Never use a 2-pixel brush. Build larger clusters through deliberate individual pixel placement or intentional shape fills; cluster size should vary with the form and display scale.
+   - High-grade pixel art uses intentional shapes and connected color groups, while allowing a single pixel when it serves a clear purpose such as an eye glint, star, or small accent.
    - **Banned Anti-Pattern**: Never use algorithmic modulo patterns (e.g., `(x + y) % 3 === 0` or `x % 4 === 0 && y % 3 === 0`). These create mechanical halftone dots, pegboards, and noisy CGI dithering.
    - **Cluster Rule**: Pixels of the same color must touch along flat edges. Lone, isolated pixels ("orphans") create visual static and dirty textures unless they represent deliberate sub-pixel particle sparks or stars.
 
@@ -275,7 +277,7 @@ Pixel art differs fundamentally from low-resolution raster graphics. Professiona
 
 | Feature | ❌ AI / Procedural Traps | ✅ Authentic Pixel Art Standard |
 | --- | --- | --- |
-| **Dithering / Texture** | Modulo checkerboards (`x % 3 == 0`), isolated pixel dots | Contiguous solid color clusters (≥ 2×2), hand-placed notches |
+| **Dithering / Texture** | Modulo checkerboards (`x % 3 == 0`), accidental noise, enlarged brush strokes | Intentional pixel clusters composed with a 1×1 brush, hand-placed notches |
 | **Lighting** | Pillow shading (bands wrapping edges inwards) | Directional form lighting (10 o'clock sun, lit facets vs shadow facets) |
 | **Gradients** | Diagonal dot-product sheen stripes, smooth mathematical blends | Layered organic cloud puffs, scalloped leaf masses |
 | **Color Ramps** | Monochrome black/white lightness sliding | Rich hue shifting (warm yellow highlights, cool blue/purple shadows) |
