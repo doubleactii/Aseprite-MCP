@@ -43,6 +43,10 @@ The reference tool **views without importing pixels**. The guide asks the assist
 
 In Aseprite, use **File → Scripts → AI Connection** to view status, pause control or reconnect. The bridge targets an explicitly selected sprite, so switching tabs does not silently redirect AI edits.
 
+`sprite.build_animation` saves its source and requested exports together under `generated/<sprite-name>/` inside the configured artwork folder. If that folder already exists, it chooses the next numbered folder. You can request a different relative `outputFolder` in the artwork folder. When using separate export commands, give each a path in the same folder; those commands do not implicitly share a job folder.
+
+Only one MCP server process can bind the configured Aseprite port. Starting a duplicate client now reports that the port is in use and leaves the existing process running. Use one AI client at a time to control the editor; switching clients requires disconnecting the current client and reconnecting Aseprite to the server started by the other client.
+
 ## What is included
 
 | Category | Examples |

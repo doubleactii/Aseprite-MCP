@@ -74,22 +74,7 @@ export class Bridge {
    await bind();
   } catch (e: any) {
    if (e?.code === 'EADDRINUSE') {
-    // Best-effort: kill any stale process on this port, then retry.
-    try {
-     const { exec } = await import('node:child_process');
-     await new Promise<void>(resolve => {
-      exec(`lsof -t -i :${this.config.port}`, (_, stdout) => {
-       const pids = (stdout ?? '').trim().split('\n').filter(Boolean);
-       for (const p of pids) {
-        const pid = Number(p);
-        if (pid && pid !== process.pid) try { process.kill(pid, 'SIGTERM'); } catch { /* ignore */ }
-       }
-       resolve();
-      });
-     });
-     await new Promise(r => setTimeout(r, 600));
-    } catch { /* ignore */ }
-    await bind();
+    throw new Error(`Aseprite MCP port ${this.config.port} is already in use. Another MCP server may already control Aseprite. Close the duplicate client or configure a single shared MCP server; the existing process was left untouched.`);
    } else {
     throw e;
    }

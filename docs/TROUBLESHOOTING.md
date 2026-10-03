@@ -10,7 +10,9 @@ Run Setup again and restart Aseprite. Check Edit → Preferences → Extensions:
 
 **Port already in use**
 
-Another MCP client may already be using port 19876. Close that client. If another unrelated app uses it, choose an unused local port in BOTH `~/.aseprite-mcp-pro/config.json` and the installed extension's `connection.json`, then restart both apps. Do not expose the bridge on a public interface.
+Another MCP server may already be using port 19876. The duplicate server now exits with a port-in-use error and does not stop the existing process. Close the duplicate AI client or disable its Aseprite MCP entry, then restart the client you want to use. The Aseprite extension connects to one bridge server, and only that server's AI client can control the editor. To switch clients, stop using the current one, then reconnect from Aseprite after starting the other client. If an unrelated app owns the port, choose an unused local port in BOTH `~/.aseprite-mcp-pro/config.json` and the installed extension's `connection.json`, then restart both apps. Do not expose the bridge on a public interface.
+
+`sprite.build_animation` groups the source and requested exports in `generated/<sprite-name>/` under the artwork folder. Repeating the same sprite name selects the next available numbered folder. Other individual export commands use the path supplied to them.
 
 **Setup cannot update an existing Codex entry**
 

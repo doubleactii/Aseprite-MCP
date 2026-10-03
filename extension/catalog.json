@@ -212,7 +212,7 @@
   },
   {
     "name": "sprite.build_animation",
-    "description": "Create, draw, animate and export a multi-frame sprite in a single operation. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization).",
+    "description": "Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization).",
     "effect": "edit",
     "batch": false,
     "parameters": {
@@ -224,6 +224,12 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 80
+        },
+        "outputFolder": {
+          "description": "Relative folder for all generated files. Defaults to generated/<sprite-name>; a numbered folder is chosen when that folder already exists.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
         },
         "width": {
           "type": "integer",

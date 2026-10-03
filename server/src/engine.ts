@@ -22,6 +22,9 @@ export class Engine {
    const requestedExports=Array.isArray(args.exports)&&args.exports.length>0?args.exports:['aseprite','sheet','gif','vyi'];
    const exports=requestedExports.includes('vyi')?requestedExports:[...requestedExports,'vyi'];
    const baseName=typeof args.name==='string'&&args.name?args.name:'Animation';
+   const safeFolder=baseName.replace(/[^\p{L}\p{N} _-]/gu,'-').trim().replace(/\s+/g,'-')||'Animation';
+   const outputFolder=await this.files.createUniqueDirectory(typeof args.outputFolder==='string'?args.outputFolder:`generated/${safeFolder}`);
+   delete args.outputFolder; // Node-only export routing; not part of the Aseprite command payload.
    const extMap:Record<string,{file:string,ext:string}>={
     aseprite:{file:`${baseName}.aseprite`,ext:'.aseprite'},
     sheet:{file:`${baseName}-sheet.png`,ext:'.png'},
@@ -34,7 +37,7 @@ export class Engine {
    for(const key of exports){
     const info=extMap[key];
     if(info){
-     const stage=await this.files.stage(info.file,[info.ext]);
+     const stage=await this.files.stage(`${outputFolder}/${info.file}`,[info.ext]);
      stagedMap[key]=stage;
      stagedArgs[key]=stage.staged;
     }

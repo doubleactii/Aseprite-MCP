@@ -16,7 +16,7 @@
 | `sprite.crop` | Crop the canvas. | edit | yes |
 | `sprite.duplicate` | Duplicate target into a new untitled sprite. | edit | no |
 | `sprite.close` | Close only an unmodified sprite. Save your work in the editor first. | edit | no |
-| `sprite.build_animation` | Create, draw, animate and export a multi-frame sprite in a single operation. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization). | edit | no |
+| `sprite.build_animation` | Create, draw, animate and export a multi-frame sprite in a single operation. Groups outputs in generated/<sprite-name>/ by default; accepts a relative outputFolder. Looping animations should follow the zero-pop system (closed orbits, harmonic cosine pulse, rotational symmetry discretization). | edit | no |
 
 ## drawing
 
